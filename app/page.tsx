@@ -1,65 +1,103 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+interface LoginForm {
+  email: string;
+  password: string;
+}
+
+export default function loginPage() {
+  const router = useRouter();
+  const [form, setForm] = useState<LoginForm>({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const user = users.find((u: any) => u.email === form.email);
+
+    if (!user) {
+      alert("User not found! Please signup first");
+      return;
+    }
+
+    if (user.password !== form.password) {
+      alert("Incorrect password!");
+      return;
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen flex items-center justify-center 
+    bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 px-4">
+
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 
+      p-8 w-full max-w-md animate-fade-in">
+
+        <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
+          Login
+        </h2>
+
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 text-gray-800 
+            placeholder-gray-400 rounded-lg p-3
+            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500
+            transition"
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 text-gray-800 
+            placeholder-gray-400 rounded-lg p-3
+            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500
+            transition"
+          />
+
+          <button
+            type="submit"
+            className="bg-gray-800 text-white rounded-lg p-3 font-semibold
+            hover:bg-gray-900 transition transform hover:scale-[1.02]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            Login
+          </button>
+        </form>
+
+        <p className="mt-4 text-center text-gray-500">
+          Don't have an account?{" "}
+          <Link href="/signup" className="text-gray-800 font-medium hover:underline">
+            signup
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
