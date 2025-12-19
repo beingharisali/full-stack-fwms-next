@@ -1,13 +1,15 @@
-export type UserRole = "admin" | "instructor" | "staff" | "student";
+export type UserRole = "admin" | "manager" | "driver";
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt?: string;
-  updatedAt?: string;
+	id: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	password: string;
+	role: UserRole;
+	createdAt?: string;
+	updatedAt?: string;
 }
 export interface AuthResponse {
-  user: User;
-  token: string;
+	user: User;
+	token: string;
 }

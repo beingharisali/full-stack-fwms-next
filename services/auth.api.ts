@@ -2,19 +2,27 @@ import http from "./http";
 import { User } from "../types/user";
 
 export async function login(
-  email: string,
-  password: string
+	email: string,
+	password: string
 ): Promise<{ user: User; token: string }> {
-  const res = await http.post("/auth/login", { email, password });
-  return res.data;
+	const res = await http.post("/auth/login", { email, password });
+	return res.data;
 }
 export async function register(
-  name: string,
-  email: string,
-  password: string
+	firstName: string,
+	lastName: string,
+	role: string,
+	email: string,
+	password: string
 ): Promise<{ user: User; token: string }> {
-  const res = await http.post("/auth/login", { name, email, password });
-  return res.data;
+	const res = await http.post("/auth/register", {
+		firstName,
+		lastName,
+		role,
+		email,
+		password,
+	});
+	return res.data;
 }
 
 // export async function getProfile(): Promise<{ user: User } | null> {
@@ -27,5 +35,5 @@ export async function register(
 // }
 
 export async function logoutApi(): Promise<void> {
-  localStorage.removeItem("token");
+	localStorage.removeItem("token");
 }
