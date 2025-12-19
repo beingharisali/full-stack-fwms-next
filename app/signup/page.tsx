@@ -122,9 +122,9 @@ export default function signupPage() {
             focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500
             transition"
           >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-            <option value="driver">Driver</option>
+            <option value="user">user</option>
+            <option value="admin">manager</option>
+            <option value="driver">driver</option>
           </select>
 
           <button
