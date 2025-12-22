@@ -30,9 +30,9 @@ export default function signupPage() {
 				const res = await register(
 				form.firstName,
 				form.lastName,
-				form.role,
 				form.email,
-				form.password
+				form.password,
+				form.role
 			);
 			localStorage.setItem("token", res.token);
 			router.push("/admin");
