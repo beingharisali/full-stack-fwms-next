@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Sidebar from "../component/sidebar";
+import Navbar from "../component/navbar";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -50,32 +52,12 @@ export default function AdminPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-6">Admin Panel</h1>
-        <nav className="flex flex-col space-y-2">
-          <a href="#dashboard" className="px-4 py-2 rounded hover:bg-gray-200">Dashboard</a>
-          <a href="#users" className="px-4 py-2 rounded hover:bg-gray-200">Users</a>
-          <a href="#vehicles" className="px-4 py-2 rounded hover:bg-gray-200">Vehicles</a>
-          <a href="#tasks" className="px-4 py-2 rounded hover:bg-gray-200">Tasks</a>
-        </nav>
-      </aside>
+      <Sidebar/>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
         {/* Navbar */}
-        <header className="bg-white shadow flex justify-between items-center px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-800">Admin Dashboard</h2>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-700">{user.firstName} {user.lastName} | Role: {user.role}</span>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Logout
-            </button>
-          </div>
-        </header>
+        <Navbar/>
 
         {/* Dashboard cards */}
         <main className="p-8 flex-1">
