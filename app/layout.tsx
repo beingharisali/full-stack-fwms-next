@@ -1,7 +1,6 @@
-
-
 import "./globals.css";
-
+import { AuthProvider } from "@/contexts/AuthContext";
+import RoleNavigation from "@/components/RoleNavigation";
 
 export default function RootLayout({
   children,
@@ -11,11 +10,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-      
-       
-       
-        {children}
-      
+        <AuthProvider>
+          <RoleNavigation />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

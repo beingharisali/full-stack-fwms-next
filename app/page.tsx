@@ -1,99 +1,93 @@
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { login } from "@/services/auth.api";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface LoginForm {
-	email: string;
-	password: string;
-}
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
 
-export default function loginPage() {
-	const router = useRouter();
-	const [form, setForm] = useState<LoginForm>({
-		email: "",
-		password: "",
-	});
-	const [error, setError] = useState("");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-	const handleChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-	) => {
-		const { name, value } = e.target;
-		setForm({ ...form, [name]: value });
-	};
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setError("");
-		try {
-			const res = await login(form.email, form.password);
-			localStorage.setItem("token", res.token);
-			router.push("/admin");
-		} catch (error: any) {
-			setError(error.response?.data?.msg || "Login failed");
-		}
-	};
+      const data = await response.json();
 
-	return (
-		<div
-			className="min-h-screen flex items-center justify-center 
-    bg-linear-to-br from-gray-50 via-gray-100 to-gray-200 px-4">
-			<div
-				className="bg-white rounded-2xl shadow-xl border border-gray-200 
-      p-8 w-full max-w-md animate-fade-in">
-				<h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-					Login
-				</h2>
+      if (response.ok) {
+        login(data.token, data.user);
+        
+        // Redirect based on role
+        switch (data.user.role) {
+          case "admin":
+            router.push("/admin");
+            break;
+          case "manager":
+            router.push("/manager");
+            break;
+          case "driver":
+            router.push("/driver");
+            break;
+          default:
+            router.push("/dashboard");
+        }
+      } else {
+        alert(data.msg || "Login failed");
+      }
+    } catch (error) {
+      alert("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-				{error && <p className="text-red-500 text-center mb-4">{error}</p>}
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to FWMS
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <div className="space-y-4">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-					<input
-						type="email"
-						name="email"
-						placeholder="Email"
-						value={form.email}
-						onChange={handleChange}
-						required
-						className="bg-gray-50 border border-gray-300 text-gray-800 
-            placeholder-gray-400 rounded-lg p-3
-            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500
-            transition"
-					/>
-
-					<input
-						type="password"
-						name="password"
-						placeholder="Password"
-						value={form.password}
-						onChange={handleChange}
-						required
-						className="bg-gray-50 border border-gray-300 text-gray-800 
-            placeholder-gray-400 rounded-lg p-3
-            focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500
-            transition"
-					/>
-
-					<button
-						type="submit"
-						className="bg-gray-800 text-white rounded-lg p-3 font-semibold
-            hover:bg-gray-900 transition transform hover:scale-[1.02]">
-						Login
-					</button>
-				</form>
-
-				<p className="mt-4 text-center text-gray-500">
-					Don't have an account?{" "}
-					<Link
-						href="/signup"
-						className="text-gray-800 font-medium hover:underline">
-						signup
-					</Link>
-				</p>
-			</div>
-		</div>
-	);
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }

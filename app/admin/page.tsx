@@ -1,97 +1,42 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Sidebar from "../component/sidebar";
-import Navbar from "../component/navbar";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/");
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUser(payload);
-    } catch (error) {
-      localStorage.removeItem("token");
-      router.push("/");
-    }
-
-    // Load mock data from localStorage or empty arrays
-    const storedUsers = localStorage.getItem("users");
-    const storedVehicles = localStorage.getItem("vehicles");
-    const storedTasks = localStorage.getItem("tasks");
-
-    setUsers(storedUsers ? JSON.parse(storedUsers) : []);
-    setVehicles(storedVehicles ? JSON.parse(storedVehicles) : []);
-    setTasks(storedTasks ? JSON.parse(storedTasks) : []);
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/");
-  };
-
-  if (!user) return <div>Loading...</div>;
-
-  // Example percentages
-  const usersPercentage = users.length > 0 ? Math.min(users.length * 10, 100) : 0;
-  const vehiclesPercentage = vehicles.length > 0 ? Math.min(vehicles.length * 15, 100) : 0;
-  const tasksPercentage = tasks.length > 0 ? Math.min(tasks.length * 20, 100) : 0;
-  const systemUsagePercentage = Math.floor(Math.random() * 100); // mock system usage
+  const { user } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar/>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Navbar */}
-        <Navbar/>
-
-        {/* Dashboard cards */}
-        <main className="p-8 flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Card 1: Users */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Users</h3>
-              <p className="text-2xl font-bold">{users.length}</p>
-              <p className="text-green-500">{usersPercentage}% increase</p>
-            </div>
-
-            {/* Card 2: Vehicles */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Vehicles</h3>
-              <p className="text-2xl font-bold">{vehicles.length}</p>
-              <p className="text-green-500">{vehiclesPercentage}% increase</p>
-            </div>
-
-            {/* Card 3: Tasks */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Tasks</h3>
-              <p className="text-2xl font-bold">{tasks.length}</p>
-              <p className="text-green-500">{tasksPercentage}% completed</p>
-            </div>
-
-            {/* Card 4: System Usage */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">System Usage</h3>
-              <p className="text-2xl font-bold">{systemUsagePercentage}%</p>
-              <p className="text-blue-500">Current usage</p>
-            </div>
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2">Total Users</h3>
+            <p className="text-2xl font-bold">25</p>
+            <p className="text-green-500">+12% from last month</p>
           </div>
-        </main>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2">Total Vehicles</h3>
+            <p className="text-2xl font-bold">15</p>
+            <p className="text-green-500">+8% from last month</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2">Active Trips</h3>
+            <p className="text-2xl font-bold">8</p>
+            <p className="text-blue-500">Currently running</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2">System Usage</h3>
+            <p className="text-2xl font-bold">85%</p>
+            <p className="text-orange-500">High usage</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
