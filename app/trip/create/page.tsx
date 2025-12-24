@@ -39,7 +39,7 @@ export default function CreateTrip() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Create Trip 📝</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Create Trip </h1>
 
         <div className="flex flex-col gap-4">
           <input

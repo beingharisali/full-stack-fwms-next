@@ -22,8 +22,8 @@ export default function TripsPage() {
 
   useEffect(() => {
     getTrips()
-      .then((data) => {   
-        setTrips(trips); // corrected from setTrips(trips)
+      .then((data) => {
+        setTrips(trips);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -35,94 +35,55 @@ export default function TripsPage() {
     setTrips((prev) => prev.filter((t) => t.id !== id));
   };
 
-  if (loading) return <p style={{ padding: "40px" }}>Loading...</p>;
+  if (loading) return <p className="p-10">Loading...</p>;
 
   return (
-    <div style={{ minHeight: "100vh", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", backgroundColor: "#f0f8ff" }}>
+    <div className="min-h-screen font-sans bg-[#f0f8ff]">
       {/* Header */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#808080",
-        color: "#fff",
-        padding: "15px 40px",
-        fontSize: "1.8em",
-        fontWeight: "bold",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-      }}>
+      <div className="flex justify-between items-center bg-gray-500 text-white p-4 px-10 text-2xl font-bold shadow-md">
         <div>Trips</div>
         <button
           onClick={() => router.push("/trips/create")}
-          style={{
-            backgroundColor: "#333",
-            color: "#fff",
-            padding: "5px 10px",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "1em",
-          }}
+          className="bg-gray-800 text-white px-3 py-1 rounded cursor-pointer text-base"
         >
           Create Trip
         </button>
       </div>
 
       {/* Table */}
-      <div style={{ padding: "40px" }}>
+      <div className="p-10">
         {trips.length === 0 ? (
-          <p style={{ color: "#ff4d4f", fontWeight: "bold" }}>No trips saved yet ❌</p>
+          <p className="text-red-500 font-bold">No trips saved yet ❌</p>
         ) : (
-          <table style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}>
-            <thead style={{ backgroundColor: "#808080", color: "#fff" }}>
+          <table className="w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-gray-500 text-white">
               <tr>
-                <th style={{ padding: "10px" }}>Departure</th>
-                <th style={{ padding: "10px" }}>Date</th>
-                <th style={{ padding: "10px" }}>Destination</th>
-                <th style={{ padding: "10px" }}>Departure Time</th>
-                <th style={{ padding: "10px" }}>Arrival Time</th>
-                <th style={{ padding: "10px" }}>Actions</th>
+                <th className="p-2">Departure</th>
+                <th className="p-2">Date</th>
+                <th className="p-2">Destination</th>
+                <th className="p-2">Departure Time</th>
+                <th className="p-2">Arrival Time</th>
+                <th className="p-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {trips.map((trip) => (
-                <tr key={trip.id} style={{ textAlign: "center", color: "#000000" }}>
-                  <td style={{ padding: "10px" }}>{trip.departure}</td>
-                  <td style={{ padding: "10px" }}>{trip.date}</td>
-                  <td style={{ padding: "10px" }}>{trip.destination}</td>
-                  <td style={{ padding: "10px" }}>{trip.departureTime || "-"}</td>
-                  <td style={{ padding: "10px" }}>{trip.arrivalTime || "-"}</td>
-                  <td style={{ padding: "10px", display: "flex", justifyContent: "center", gap: "10px" }}>
+                <tr key={trip.id} className="text-center text-black">
+                  <td className="p-2">{trip.departure}</td>
+                  <td className="p-2">{trip.date}</td>
+                  <td className="p-2">{trip.destination}</td>
+                  <td className="p-2">{trip.departureTime || "-"}</td>
+                  <td className="p-2">{trip.arrivalTime || "-"}</td>
+                  <td className="p-2 flex justify-center gap-2">
                     <button
                       onClick={() => router.push(`/trips/update/${trip.id}`)}
-                      style={{
-                        backgroundColor: "#333",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        padding: "5px 10px",
-                        cursor: "pointer",
-                      }}
+                      className="bg-gray-800 text-white rounded px-3 py-1 cursor-pointer"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(trip.id)}
-                      style={{
-                        backgroundColor: "#333",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        padding: "5px 10px",
-                        cursor: "pointer",
-                      }}
+                      className="bg-gray-800 text-white rounded px-3 py-1 cursor-pointer"
                     >
                       Delete
                     </button>
