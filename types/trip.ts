@@ -1,11 +1,12 @@
 
 export interface Trip {
-  id: string;
+  _id?: string;
   departure: string;
   destination: string;
   arrivalTime: string;
   departureTime: string;
-  date: Date;       
+  date: Date;
+  createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }

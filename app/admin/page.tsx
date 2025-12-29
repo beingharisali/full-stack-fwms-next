@@ -64,30 +64,30 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Users */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Users</h3>
-              <p className="text-2xl font-bold">{users.length}</p>
-              <p className="text-green-500">{usersPercentage}% increase</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Users</h3>
+              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+              <p className="text-gray-600">{usersPercentage}% increase</p>
             </div>
 
             {/* Card 2: Vehicles */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Vehicles</h3>
-              <p className="text-2xl font-bold">{vehicles.length}</p>
-              <p className="text-green-500">{vehiclesPercentage}% increase</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Vehicles</h3>
+              <p className="text-2xl font-bold text-gray-900">{vehicles.length}</p>
+              <p className="text-gray-600">{vehiclesPercentage}% increase</p>
             </div>
 
             {/* Card 3: Tasks */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">Total Tasks</h3>
-              <p className="text-2xl font-bold">{tasks.length}</p>
-              <p className="text-green-500">{tasksPercentage}% completed</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Tasks</h3>
+              <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
+              <p className="text-gray-600">{tasksPercentage}% completed</p>
             </div>
 
             {/* Card 4: System Usage */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2">System Usage</h3>
-              <p className="text-2xl font-bold">{systemUsagePercentage}%</p>
-              <p className="text-blue-500">Current usage</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">System Usage</h3>
+              <p className="text-2xl font-bold text-gray-900">{systemUsagePercentage}%</p>
+              <p className="text-gray-600">Current usage</p>
             </div>
           </div>
         </main>
