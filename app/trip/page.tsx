@@ -108,3 +108,4 @@ export default function TripsPage() {
 		</div>
 	);
 }
+console.log("object")

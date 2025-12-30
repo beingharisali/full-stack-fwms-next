@@ -41,6 +41,7 @@ export default function CreateTrip() {
     } finally {
       setLoading(false);
     }
+    console.log();
   };
 
   return (

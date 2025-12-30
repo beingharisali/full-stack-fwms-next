@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function Navbar() {
+	console.log('');
 	const router = useRouter();
 	const [user, setUser] = useState<any>(null);
 
