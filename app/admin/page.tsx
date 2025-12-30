@@ -51,13 +51,13 @@ export default function AdminPage() {
   const systemUsagePercentage = Math.floor(Math.random() * 100); // mock system usage
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar/>
+    <div className="flex min-h-screen bg-gray-100 flex-col ">
+      {/* Navbar */}
+      <Navbar/>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Navbar */}
-        <Navbar/>
+      <div className="flex flex-1">
+        <Sidebar/>
 
         {/* Dashboard cards */}
         <main className="p-8 flex-1">
