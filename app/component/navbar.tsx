@@ -32,14 +32,14 @@ export default function Navbar() {
 	if (!user) return <div>Loading...</div>;
 
 	return (
-		<header className="bg-white shadow flex justify-between items-center px-6 py-4 border-b border-gray-300">
+		<header className="bg-white shadow flex justify-between items-center py-4 border-b border-gray-300 w-full">
 			<div className="flex items-center space-x-6">
-				<h2 className="text-xl font-semibold text-gray-800">Admin Dashboard</h2>
-				<Link
+				<h2 className="text-xl font-semibold text-gray-800">Fleet Watch Managment System</h2>
+				{/* <Link
 					href="/trip"
 					className="text-gray-800 hover:text-gray-600 transition-colors">
 					Trips
-				</Link>
+				</Link> */}
 			</div>
 			<div className="flex items-center space-x-4">
 				<span className="text-gray-800">

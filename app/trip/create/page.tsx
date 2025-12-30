@@ -44,10 +44,10 @@ export default function CreateTrip() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar/>
-      <div className="flex-1 flex flex-col">
-        <Navbar/>
+    <div className="flex min-h-screen bg-gray-100 flex-col">
+      <Navbar/>
+      <div className="flex flex-1">
+        <Sidebar/>
         <main className="flex justify-center items-center flex-1 p-4">
           <div className="bg-white p-10 rounded-xl shadow-md w-full max-w-md">
             <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Create Trip 📝</h1>

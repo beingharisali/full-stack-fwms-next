@@ -4,9 +4,14 @@ import Sidebar from '../component/sidebar'
 
 function Managerpage() {
   return (
-    <div>
+     <div className="flex min-h-screen bg-gray-100 flex-col ">
       <Navbar />
-      <Sidebar />
+      <div className="flex flex-1">
+        <Sidebar />
+        <div className="flex-1 p-8">
+      
+        </div>
+      </div>
     </div>
   )
 }

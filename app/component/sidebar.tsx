@@ -3,8 +3,8 @@ import Link from "next/link";
 
 function Sidebar() {
 	return (
-		<aside className="w-64 bg-gray-800 shadow-md p-6 border-r border-gray-600">
-			<h1 className="text-2xl font-bold mb-6 text-white">Admin Panel</h1>
+		<aside className="w-64  bg-gray-800 shadow-md p-6 border-r border-gray-600">
+			{/* <h1 className="text-2xl font-bold mb-6 text-white">Admin Panel</h1> */}
 			<nav className="flex flex-col space-y-2">
 				<a
 					href="#dashboard"
