@@ -3,35 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../component/navbar';
 import Sidebar from '../component/sidebar';
-import { Driver } from '../../types/driver';
-import { getDrivers, createDriver, updateDriver, deleteDriver } from '../../services/driver.api';
+import { Vehicle } from '../../types/vehicle';
+import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '../../services/vehicle.api';
 
-function DriverPage() {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+function VehiclePage() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    licenseNumber: '',
-    licenseType: 'Motorcycle' as 'Motorcycle' | 'LTV' | 'HTV' | 'PSV',
-    available: true
+    number: '',
+    type: 'Car' as 'Car' | 'Bike' | 'Truck' | 'Van',
+    status: 'Available' as 'Available' | 'In-Use' | 'Maintenance' | 'Inactive'
   });
 
   useEffect(() => {
-    fetchDrivers();
+    fetchVehicles();
   }, []);
 
-  const fetchDrivers = async () => {
+  const fetchVehicles = async () => {
     try {
       setLoading(true);
-      const data = await getDrivers();
-      setDrivers(data);
+      const data = await getVehicles();
+      setVehicles(data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch drivers');
-      console.error('Error fetching drivers:', err);
+      setError('Failed to fetch vehicles');
+      console.error('Error fetching vehicles:', err);
     } finally {
       setLoading(false);
     }
@@ -39,52 +38,68 @@ function DriverPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     try {
-      if (editingDriver) {
-        await updateDriver(editingDriver._id!, formData);
+      if (editingVehicle) {
+        console.log('Updating vehicle:', editingVehicle._id);
+        await updateVehicle(editingVehicle._id!, formData);
       } else {
-        await createDriver(formData);
+        console.log('Creating new vehicle');
+        await createVehicle(formData);
       }
-      await fetchDrivers();
+      await fetchVehicles();
       resetForm();
     } catch (err) {
-      setError('Failed to save driver');
-      console.error('Error saving driver:', err);
+      console.error('Error saving vehicle:', err);
+      setError('Failed to save vehicle');
     }
   };
 
-  const handleEdit = (driver: Driver) => {
-    setEditingDriver(driver);
+  const handleEdit = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
     setFormData({
-      name: driver.name,
-      licenseNumber: driver.licenseNumber,
-      licenseType: driver.licenseType,
-      available: driver.available
+      number: vehicle.number,
+      type: vehicle.type,
+      status: vehicle.status
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this driver?')) {
+    if (window.confirm('Are you sure you want to delete this vehicle?')) {
       try {
-        await deleteDriver(id);
-        await fetchDrivers();
+        await deleteVehicle(id);
+        await fetchVehicles();
       } catch (err) {
-        setError('Failed to delete driver');
-        console.error('Error deleting driver:', err);
+        setError('Failed to delete vehicle');
+        console.error('Error deleting vehicle:', err);
       }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      licenseNumber: '',
-      licenseType: 'Motorcycle',
-      available: true
+      number: '',
+      type: 'Car',
+      status: 'Available'
     });
-    setEditingDriver(null);
+    setEditingVehicle(null);
     setShowForm(false);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Available':
+        return 'bg-green-100 text-green-800';
+      case 'In-Use':
+        return 'bg-blue-100 text-blue-800';
+      case 'Maintenance':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Inactive':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   if (loading) return (
@@ -106,12 +121,12 @@ function DriverPage() {
         <Sidebar />
         <div className="flex-1 p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Driver Management</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Vehicle Management</h1>
             <button
               onClick={() => setShowForm(!showForm)}
               className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
             >
-              {showForm ? 'Cancel' : 'Add Driver'}
+              {showForm ? 'Cancel' : 'Add Vehicle'}
             </button>
           </div>
 
@@ -124,65 +139,58 @@ function DriverPage() {
           {showForm && (
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">
-                {editingDriver ? 'Edit Driver' : 'Add New Driver'}
+                {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
+                    Vehicle Number
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    value={formData.number}
+                    onChange={(e) => setFormData({ ...formData, number: e.target.value.toUpperCase() })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    placeholder="e.g., ABC-123"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Type
+                    Vehicle Type
                   </label>
                   <select
-                    value={formData.licenseType}
-                    onChange={(e) => setFormData({ ...formData, licenseType: e.target.value as 'Motorcycle' | 'LTV' | 'HTV' | 'PSV' })}
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'Car' | 'Bike' | 'Truck' | 'Van' })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="Motorcycle">Motorcycle</option>
-                    <option value="LTV">LTV</option>
-                    <option value="HTV">HTV</option>
-                    <option value="PSV">PSV</option>
+                    <option value="Car">Car</option>
+                    <option value="Bike">Bike</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Van">Van</option>
                   </select>
                 </div>
                 <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.available}
-                      onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
-                      className="mr-2"
-                    />
-                    Available
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
                   </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Available' | 'In-Use' | 'Maintenance' | 'Inactive' })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Available">Available</option>
+                    <option value="In-Use">In-Use</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     type="submit"
                     className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
                   >
-                    {editingDriver ? 'Update' : 'Create'}
+                    {editingVehicle ? 'Update' : 'Create'}
                   </button>
                   <button
                     type="button"
@@ -201,13 +209,10 @@ function DriverPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
+                    Vehicle Number
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    License Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    License Type
+                    Type
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -218,36 +223,29 @@ function DriverPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {drivers.map((driver) => (
-                  <tr key={driver._id}>
+                {vehicles.map((vehicle) => (
+                  <tr key={vehicle._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {driver.name}
+                      {vehicle.number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {driver.licenseNumber}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {driver.licenseType}
+                      {vehicle.type}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        driver.available
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {driver.available ? 'Available' : 'Unavailable'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(vehicle.status)}`}>
+                        {vehicle.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
-                        onClick={() => handleEdit(driver)}
-                        className="text-indigo-600 hover:text-indigo-900 px-3 py-1 rounded"
+                        onClick={() => handleEdit(vehicle)}
+                        className="text-indigo-600 hover:text-indigo-900"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(driver._id!)}
-                        className="text-red-600 hover:text-red-900 px-3 py-1 rounded"
+                        onClick={() => handleDelete(vehicle._id!)}
+                        className="text-red-600 hover:text-red-900"
                       >
                         Delete
                       </button>
@@ -256,9 +254,9 @@ function DriverPage() {
                 ))}
               </tbody>
             </table>
-            {drivers.length === 0 && (
+            {vehicles.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                No drivers found. Add your first driver above.
+                No vehicles found. Add your first vehicle above.
               </div>
             )}
           </div>
@@ -268,4 +266,4 @@ function DriverPage() {
   );
 }
 
-export default DriverPage;
+export default VehiclePage;

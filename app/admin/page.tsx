@@ -4,13 +4,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
+import { getDrivers } from "../../services/driver.api";
+import { getVehicles } from "../../services/vehicle.api";
 
 export default function AdminPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -27,15 +29,25 @@ export default function AdminPage() {
       router.push("/");
     }
 
-    // Load mock data from localStorage or empty arrays
-    const storedUsers = localStorage.getItem("users");
-    const storedVehicles = localStorage.getItem("vehicles");
-    const storedTasks = localStorage.getItem("tasks");
-
-    setUsers(storedUsers ? JSON.parse(storedUsers) : []);
-    setVehicles(storedVehicles ? JSON.parse(storedVehicles) : []);
-    setTasks(storedTasks ? JSON.parse(storedTasks) : []);
+    // Fetch real data from APIs
+    fetchDashboardData();
   }, [router]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [driversData, vehiclesData] = await Promise.all([
+        getDrivers(),
+        getVehicles()
+      ]);
+      setDrivers(driversData);
+      setVehicles(vehiclesData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -45,9 +57,9 @@ export default function AdminPage() {
   if (!user) return <div>Loading...</div>;
 
   // Example percentages
-  const usersPercentage = users.length > 0 ? Math.min(users.length * 10, 100) : 0;
+  const driversPercentage = drivers.length > 0 ? Math.min(drivers.length * 10, 100) : 0;
   const vehiclesPercentage = vehicles.length > 0 ? Math.min(vehicles.length * 15, 100) : 0;
-  const tasksPercentage = tasks.length > 0 ? Math.min(tasks.length * 20, 100) : 0;
+  const availableVehicles = vehicles.filter(v => v.status === 'Available').length;
   const systemUsagePercentage = Math.floor(Math.random() * 100); // mock system usage
 
   return (
@@ -62,11 +74,11 @@ export default function AdminPage() {
         {/* Dashboard cards */}
         <main className="p-8 flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Card 1: Users */}
+            {/* Card 1: Drivers */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Users</h3>
-              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-              <p className="text-gray-600">{usersPercentage}% increase</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Drivers</h3>
+              <p className="text-2xl font-bold text-gray-900">{drivers.length}</p>
+              <p className="text-gray-600">{driversPercentage}% increase</p>
             </div>
 
             {/* Card 2: Vehicles */}
@@ -76,11 +88,11 @@ export default function AdminPage() {
               <p className="text-gray-600">{vehiclesPercentage}% increase</p>
             </div>
 
-            {/* Card 3: Tasks */}
+            {/* Card 3: Available Vehicles */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">Total Tasks</h3>
-              <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
-              <p className="text-gray-600">{tasksPercentage}% completed</p>
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Available Vehicles</h3>
+              <p className="text-2xl font-bold text-gray-900">{availableVehicles}</p>
+              <p className="text-gray-600">Ready for use</p>
             </div>
 
             {/* Card 4: System Usage */}
