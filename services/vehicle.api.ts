@@ -1,35 +1,26 @@
-import http from "./http";
-import { Vehicle } from "@/types/vehicle";
-
-
-export const createVehicle = async (data: Vehicle): Promise<Vehicle> => {
-  const res = await http.post("/vehicles", data);
-  return res.data.data; 
-};
-
+import http from './http';
+import { Vehicle } from '../types/vehicle';
 
 export const getVehicles = async (): Promise<Vehicle[]> => {
-  const res = await http.get("/vehicles");
-  return res.data.data; 
+  const response = await http.get('/vehicles');
+  return response.data.vehicles;
 };
 
-
-export const getVehicleById = async (id: string): Promise<Vehicle> => {
-  const res = await http.get(`/vehicles/${id}`);
-  return res.data.data; 
+export const getVehicle = async (id: string): Promise<Vehicle> => {
+  const response = await http.get(`/vehicles/${id}`);
+  return response.data.vehicle;
 };
 
-
-export const updateVehicle = async (
-  id: string,
-  vehicle: Vehicle
-): Promise<Vehicle> => {
-  const res = await http.put(`/vehicles/${id}`, vehicle);
-  return res.data.data; 
+export const createVehicle = async (vehicle: Omit<Vehicle, '_id' | 'createdAt' | 'updatedAt'>): Promise<Vehicle> => {
+  const response = await http.post('/vehicle', vehicle);
+  return response.data.vehicle;
 };
 
+export const updateVehicle = async (id: string, vehicle: Partial<Vehicle>): Promise<Vehicle> => {
+  const response = await http.put(`/vehicles/${id}`, vehicle);
+  return response.data.vehicle;
+};
 
 export const deleteVehicle = async (id: string): Promise<void> => {
   await http.delete(`/vehicles/${id}`);
-  ``
 };
