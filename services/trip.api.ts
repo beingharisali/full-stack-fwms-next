@@ -30,3 +30,14 @@ export async function deleteTrip(id: string): Promise<void> {
   await http.delete(`/trips/${id}`);
   // Backend returns { success: true, message: "Trip deleted successfully" }
 }
+import axios from "axios";
+
+
+
+export const getDriverTrips = async () => {
+  const res = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}/driver/trips`,
+    { withCredentials: true }
+  );
+  return res.data;
+};
