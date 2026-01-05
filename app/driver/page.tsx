@@ -1,271 +1,164 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Navbar from '../component/navbar';
-import Sidebar from '../component/sidebar';
-import { Driver } from '../../types/driver';
-import { getDrivers, createDriver, updateDriver, deleteDriver } from '../../services/driver.api';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-function DriverPage() {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+import Navbar from "../component/navbar";
+import { getDriverTrips } from "../../services/trip.api";
+
+interface Trip {
+  id: number;
+  status: "Pending" | "Ongoing" | "Completed";
+  pickup: string;
+  drop: string;
+  createdAt: string;
+}
+
+export default function DriverPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    licenseNumber: '',
-    licenseType: 'Motorcycle' as 'Motorcycle' | 'LTV' | 'HTV' | 'PSV',
-    available: true
-  });
 
   useEffect(() => {
-    fetchDrivers();
-  }, []);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/");
+      return;
+    }
 
-  const fetchDrivers = async () => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setUser(payload);
+
+      
+      if (payload.role !== "driver") {
+        router.push("/");
+        return;
+      }
+    } catch (error) {
+      localStorage.removeItem("token");
+      router.push("/");
+    }
+
+    fetchTrips();
+  }, [router]);
+
+  const fetchTrips = async () => {
     try {
       setLoading(true);
-      const data = await getDrivers();
-      setDrivers(data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to fetch drivers');
-      console.error('Error fetching drivers:', err);
+      const data = await getDriverTrips(); 
+      setTrips(data);
+    } catch (error) {
+      console.error("Error fetching driver trips:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingDriver) {
-        await updateDriver(editingDriver._id!, formData);
-      } else {
-        await createDriver(formData);
-      }
-      await fetchDrivers();
-      resetForm();
-    } catch (err) {
-      setError('Failed to save driver');
-      console.error('Error saving driver:', err);
-    }
-  };
+  if (!user || loading) return <div>Loading...</div>;
 
-  const handleEdit = (driver: Driver) => {
-    setEditingDriver(driver);
-    setFormData({
-      name: driver.name,
-      licenseNumber: driver.licenseNumber,
-      licenseType: driver.licenseType,
-      available: driver.available
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this driver?')) {
-      try {
-        await deleteDriver(id);
-        await fetchDrivers();
-      } catch (err) {
-        setError('Failed to delete driver');
-        console.error('Error deleting driver:', err);
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      licenseNumber: '',
-      licenseType: 'Motorcycle',
-      available: true
-    });
-    setEditingDriver(null);
-    setShowForm(false);
-  };
-
-  if (loading) return (
-    <div className="flex min-h-screen bg-gray-100 flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex-1 p-8">
-          <div className="text-center">Loading...</div>
-        </div>
-      </div>
-    </div>
-  );
+  
+  const totalTrips = trips.length;
+  const ongoingTrips = trips.filter(t => t.status === "Ongoing").length;
+  const completedTrips = trips.filter(t => t.status === "Completed").length;
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
+      
       <Navbar />
+
       <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex-1 p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Driver Management</h1>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
-            >
-              {showForm ? 'Cancel' : 'Add Driver'}
-            </button>
+        
+
+        <main className="p-8 flex-1">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Total Trips
+              </h3>
+              <p className="text-2xl font-bold text-gray-900">
+                {totalTrips}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Ongoing Trips
+              </h3>
+              <p className="text-2xl font-bold text-blue-600">
+                {ongoingTrips}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Completed Trips
+              </h3>
+              <p className="text-2xl font-bold text-green-600">
+                {completedTrips}
+              </p>
+            </div>
           </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          {showForm && (
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {editingDriver ? 'Edit Driver' : 'Add New Driver'}
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Type
-                  </label>
-                  <select
-                    value={formData.licenseType}
-                    onChange={(e) => setFormData({ ...formData, licenseType: e.target.value as 'Motorcycle' | 'LTV' | 'HTV' | 'PSV' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Motorcycle">Motorcycle</option>
-                    <option value="LTV">LTV</option>
-                    <option value="HTV">HTV</option>
-                    <option value="PSV">PSV</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.available}
-                      onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
-                      className="mr-2"
-                    />
-                    Available
-                  </label>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    type="submit"
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-                  >
-                    {editingDriver ? 'Update' : 'Create'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-100 text-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    License Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    License Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="p-3 text-left">Trip ID</th>
+                  <th className="p-3 text-left">Status</th>
+                  <th className="p-3 text-left">Pickup</th>
+                  <th className="p-3 text-left">Drop</th>
+                  <th className="p-3 text-left">Created</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {drivers.map((driver) => (
-                  <tr key={driver._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {driver.name}
+              <tbody>
+                {trips.map(trip => (
+                  <tr
+                    key={trip.id}
+                    className="border-t hover:bg-gray-50"
+                  >
+                    <td className="p-3 font-medium">
+                      #{trip.id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {driver.licenseNumber}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {driver.licenseType}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        driver.available
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {driver.available ? 'Available' : 'Unavailable'}
+                    <td className="p-3">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-semibold ${
+                          trip.status === "Ongoing"
+                            ? "bg-blue-100 text-blue-700"
+                            : trip.status === "Completed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {trip.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => handleEdit(driver)}
-                        className="text-indigo-600 hover:text-indigo-900 px-3 py-1 rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(driver._id!)}
-                        className="text-red-600 hover:text-red-900 px-3 py-1 rounded"
-                      >
-                        Delete
-                      </button>
+                    <td className="p-3">{trip.pickup}</td>
+                    <td className="p-3">{trip.drop}</td>
+                    <td className="p-3 text-gray-500">
+                      {new Date(trip.createdAt).toLocaleString()}
                     </td>
                   </tr>
                 ))}
+
+                {trips.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="p-6 text-center text-gray-500"
+                    >
+                      No trips assigned
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-            {drivers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No drivers found. Add your first driver above.
-              </div>
-            )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
 }
-
-export default DriverPage;
