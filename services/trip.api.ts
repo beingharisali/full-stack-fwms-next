@@ -41,3 +41,28 @@ export const getDriverTrips = async () => {
   );
   return res.data;
 };
+
+
+// services/trip.api.ts
+
+export const getAssignedTrips = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/trips/assigned", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch assigned trips");
+    }
+
+    const data = await res.json();
+    return data; // ye array of trips return kare
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
