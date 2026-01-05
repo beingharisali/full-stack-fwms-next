@@ -2,24 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../component/sidebar";
-import Navbar from "../component/navbar";
-import { getTrips } from "../../services/trip.api";
-
-interface Trip {
-  id: number;
-  driverName: string;
-  status: "Pending" | "Ongoing" | "Completed";
-  pickup: string;
-  drop: string;
-  createdAt: string;
-}
+import Navbar from "../manager/component/navbar";
+import { getTrips } from "@/services/trip.api";
+import { Trip } from "@/types/trip";
 
 export default function ManagerPage() {
   const router = useRouter();
+
   const [user, setUser] = useState<any>(null);
+  const [view, setView] = useState<"none" | "trips" | "drivers">("none");
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingTrips, setLoadingTrips] = useState(false);
+  const [drivers, setDrivers] = useState<any[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -31,149 +25,173 @@ export default function ManagerPage() {
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       setUser(payload);
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       router.push("/");
+      return;
     }
 
-    fetchTrips();
+    
+    setDrivers([
+      { id: 1, name: "John Doe" },
+      { id: 2, name: "Jane Smith" },
+      { id: 3, name: "Ali Khan" },
+    ]);
+
+    fetchTripsSummary();
   }, [router]);
 
-  const fetchTrips = async () => {
+  const fetchTripsSummary = async () => {
     try {
-      setLoading(true);
-      const data = await getTrips(); 
-      setTrips(trips);
-    } catch (error) {
-      console.error("Error fetching trips:", error);
+      setLoadingTrips(true);
+      const data = await getTrips();
+      setTrips(data);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setLoading(false);
+      setLoadingTrips(false);
     }
   };
 
-  if (!user || loading) return <div>Loading...</div>;
-
   
-  const totalTrips = trips.length;
-  const ongoingTrips = trips.filter(t => t.status === "Ongoing").length;
-  const pendingTrips = trips.filter(t => t.status === "Pending").length;
-  const completedTrips = trips.filter(t => t.status === "Completed").length;
+  const handleView = (type: "trips" | "drivers") => {
+    if (type === "trips" && trips.length === 0) {
+      fetchTripsSummary();
+    }
+    setView(type);
+  };
+
+  if (!user) {
+    return <div className="p-10 text-gray-700">Loading...</div>;
+  }
 
   return (
-    <div className="flex min-h-screen bg-gray-100 flex-col">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       
-      <Navbar />
+      <Navbar setView={handleView} currentView={view} />
 
-      
-      <div className="flex flex-1">
-        <Sidebar />
-
-        
-        <main className="p-8 flex-1">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                Total Trips
-              </h3>
-              <p className="text-2xl font-bold text-gray-900">
-                {totalTrips}
-              </p>
-              <p className="text-gray-600">All trips</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                Ongoing Trips
-              </h3>
-              <p className="text-2xl font-bold text-blue-600">
-                {ongoingTrips}
-              </p>
-              <p className="text-gray-600">Currently active</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                Pending Trips
-              </h3>
-              <p className="text-2xl font-bold text-yellow-600">
-                {pendingTrips}
-              </p>
-              <p className="text-gray-600">Awaiting start</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                Completed Trips
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                {completedTrips}
-              </p>
-              <p className="text-gray-600">Finished</p>
-            </div>
+      <main className="p-8 flex-1">
+  
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              Total Trips
+            </h3>
+            <p className="text-2xl font-bold text-gray-900">
+              {trips.length}
+            </p>
+            <p className="text-gray-600">All trips in system</p>
           </div>
 
-          
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+              Total Drivers
+            </h3>
+            <p className="text-2xl font-bold text-green-600">
+              {drivers.length}
+            </p>
+            <p className="text-gray-600">Drivers added by admin</p>
+          </div>
+        </div>
+
+      
+        {view === "trips" && (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <h2 className="text-xl font-bold p-6 border-b text-gray-900">
+              Trips
+            </h2>
+
+            <table className="w-full text-left">
               <thead className="bg-gray-100 text-gray-700">
                 <tr>
-                  <th className="p-3 text-left">Trip ID</th>
-                  <th className="p-3 text-left">Driver</th>
-                  <th className="p-3 text-left">Status</th>
-                  <th className="p-3 text-left">Pickup</th>
-                  <th className="p-3 text-left">Drop</th>
-                  <th className="p-3 text-left">Created</th>
+                  <th className="px-4 py-3">Departure</th>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Destination</th>
+                  <th className="px-4 py-3">Departure Time</th>
+                  <th className="px-4 py-3">Arrival Time</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {trips.map(trip => (
-                  <tr
-                    key={trip.id}
-                    className="border-t hover:bg-gray-50"
-                  >
-                    <td className="p-3 font-medium">
-                      #{trip.id}
-                    </td>
-                    <td className="p-3">
-                      {trip.driverName}
-                    </td>
-                    <td className="p-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          trip.status === "Ongoing"
-                            ? "bg-blue-100 text-blue-700"
-                            : trip.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {trip.status}
-                      </span>
-                    </td>
-                    <td className="p-3">{trip.pickup}</td>
-                    <td className="p-3">{trip.drop}</td>
-                    <td className="p-3 text-gray-500">
-                      {new Date(trip.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
 
-                {trips.length === 0 && (
+              <tbody>
+                {loadingTrips ? (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="p-6 text-center text-gray-500"
-                    >
-                      No trips found
+                    <td colSpan={6} className="p-6 text-center text-gray-600">
+                      Loading trips...
                     </td>
                   </tr>
+                ) : trips.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-6 text-center text-gray-600">
+                      No trips available
+                    </td>
+                  </tr>
+                ) : (
+                  trips.map(trip => (
+                    <tr key={trip._id} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3">{trip.departure}</td>
+                      <td className="px-4 py-3">
+                        {new Date(trip.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">{trip.destination}</td>
+                      <td className="px-4 py-3">
+                        {trip.departureTime || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {trip.arrivalTime || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() =>
+                            router.push(`/trip/update/${trip._id}`)
+                          }
+                          className="bg-blue-500 text-grey px-3 py-1 rounded text-sm hover:bg-blue-400"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </main>
-      </div>
+        )}
+
+        
+        {view === "drivers" && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold mb-4 text-gray-900">
+              Drivers
+            </h2>
+
+            <table className="w-full text-left">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="px-4 py-3">ID</th>
+                  <th className="px-4 py-3">Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                {drivers.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="p-6 text-center text-gray-600">
+                      No drivers found
+                    </td>
+                  </tr>
+                ) : (
+                  drivers.map(driver => (
+                    <tr key={driver.id} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3">{driver.id}</td>
+                      <td className="px-4 py-3">{driver.name}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
