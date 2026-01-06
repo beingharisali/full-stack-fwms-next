@@ -12,16 +12,16 @@ export async function login(
 export async function register(
 	firstName: string,
 	lastName: string,
-	role: string,
 	email: string,
-	password: string
+	password: string,
+	role: string
 ): Promise<{ user: User; token: string }> {
 	const res = await http.post("/auth/register", {
 		firstName,
 		lastName,
-		role,
 		email,
 		password,
+		role,
 	});
 	return res.data;
 }

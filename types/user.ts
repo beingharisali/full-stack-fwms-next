@@ -1,10 +1,10 @@
 export type UserRole = "admin" | "manager" | "driver";
 export interface User {
-	id: string;
+	_id?: string;
 	firstName: string;
 	lastName: string;
 	email: string;
-	password: string;
+	password?: string;
 	role: UserRole;
 	createdAt?: string;
 	updatedAt?: string;
