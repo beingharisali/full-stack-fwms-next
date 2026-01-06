@@ -31,7 +31,6 @@ export default function ManagerPage() {
       return;
     }
 
-    
     setDrivers([
       { id: 1, name: "John Doe" },
       { id: 2, name: "Jane Smith" },
@@ -53,7 +52,6 @@ export default function ManagerPage() {
     }
   };
 
-  
   const handleView = (type: "trips" | "drivers") => {
     if (type === "trips" && trips.length === 0) {
       fetchTripsSummary();
@@ -62,47 +60,50 @@ export default function ManagerPage() {
   };
 
   if (!user) {
-    return <div className="p-10 text-gray-700">Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <p className="text-gray-700">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      
+    <div className="flex min-h-screen flex-col bg-white">
       <Navbar setView={handleView} currentView={view} />
 
-      <main className="p-8 flex-1">
-  
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+      <main className="flex-1 bg-gray-50 p-8">
+        {/* ---------- Stats ---------- */}
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">
               Total Trips
             </h3>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-blue-600">
               {trips.length}
             </p>
             <p className="text-gray-600">All trips in system</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">
               Total Drivers
             </h3>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-3xl font-bold text-green-600">
               {drivers.length}
             </p>
             <p className="text-gray-600">Drivers added by admin</p>
           </div>
         </div>
 
-      
+        {/* ---------- Trips ---------- */}
         {view === "trips" && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <h2 className="text-xl font-bold p-6 border-b text-gray-900">
+          <div className="overflow-hidden rounded-xl bg-white shadow-md">
+            <h2 className="border-b p-6 text-xl font-bold text-gray-900">
               Trips
             </h2>
 
             <table className="w-full text-left">
-              <thead className="bg-gray-100 text-gray-700">
+              <thead className="bg-gray-100 text-sm text-gray-700">
                 <tr>
                   <th className="px-4 py-3">Departure</th>
                   <th className="px-4 py-3">Date</th>
@@ -113,7 +114,7 @@ export default function ManagerPage() {
                 </tr>
               </thead>
 
-              <tbody>
+              <tbody className="text-gray-800">
                 {loadingTrips ? (
                   <tr>
                     <td colSpan={6} className="p-6 text-center text-gray-600">
@@ -128,24 +129,46 @@ export default function ManagerPage() {
                   </tr>
                 ) : (
                   trips.map(trip => (
-                    <tr key={trip._id} className="border-b hover:bg-gray-50">
+                    <tr
+                      key={trip._id}
+                      className="border-b hover:bg-gray-50"
+                    >
                       <td className="px-4 py-3">{trip.departure}</td>
                       <td className="px-4 py-3">
                         {new Date(trip.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">{trip.destination}</td>
+
                       <td className="px-4 py-3">
-                        {trip.departureTime || "-"}
+                        {trip.departureTime
+                          ? new Date(
+                              `1970-01-01T${trip.departureTime}`
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "-"}
                       </td>
+
                       <td className="px-4 py-3">
-                        {trip.arrivalTime || "-"}
+                        {trip.arrivalTime
+                          ? new Date(
+                              `1970-01-01T${trip.arrivalTime}`
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "-"}
                       </td>
+
                       <td className="px-4 py-3">
                         <button
                           onClick={() =>
                             router.push(`/trip/update/${trip._id}`)
                           }
-                          className="bg-blue-500 text-grey px-3 py-1 rounded text-sm hover:bg-blue-400"
+                          className="rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-500 transition"
                         >
                           Edit
                         </button>
@@ -158,21 +181,22 @@ export default function ManagerPage() {
           </div>
         )}
 
-        
+        {/* ---------- Drivers ---------- */}
         {view === "drivers" && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h2 className="mb-4 text-xl font-bold text-gray-900">
               Drivers
             </h2>
 
             <table className="w-full text-left">
-              <thead className="bg-gray-100 text-gray-700">
+              <thead className="bg-gray-100 text-sm text-gray-700">
                 <tr>
                   <th className="px-4 py-3">ID</th>
                   <th className="px-4 py-3">Name</th>
                 </tr>
               </thead>
-              <tbody>
+
+              <tbody className="text-gray-800">
                 {drivers.length === 0 ? (
                   <tr>
                     <td colSpan={2} className="p-6 text-center text-gray-600">
@@ -181,7 +205,10 @@ export default function ManagerPage() {
                   </tr>
                 ) : (
                   drivers.map(driver => (
-                    <tr key={driver.id} className="border-b hover:bg-gray-50">
+                    <tr
+                      key={driver.id}
+                      className="border-b hover:bg-gray-50"
+                    >
                       <td className="px-4 py-3">{driver.id}</td>
                       <td className="px-4 py-3">{driver.name}</td>
                     </tr>
