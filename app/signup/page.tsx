@@ -5,6 +5,137 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { register } from "@/services/auth.api";
 
+export default function SignupPage() {
+  const router = useRouter();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "driver",
+  });
+
+  const [error, setError] = useState("");
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const res = await register(
+        form.firstName,
+        form.lastName,
+        form.role,
+        form.email,
+        form.password
+      );
+
+      // 🔐 Save token (cookie + localStorage)
+      document.cookie = `token=${res.token}; path=/`;
+      localStorage.setItem("token", res.token);
+
+      // 🔓 Decode token to get role
+      const payload = JSON.parse(atob(res.token.split(".")[1]));
+      const role = payload.role;
+
+      // 🚀 Role based redirect
+      if (role === "admin") router.push("/admin");
+      else if (role === "manager") router.push("/manager");
+      else router.push("/driver");
+
+    } catch (err: any) {
+      document.cookie = "token=; path=/; max-age=0";
+      localStorage.removeItem("token");
+      setError(err?.response?.data?.msg || "Registration failed");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 via-gray-100 to-gray-200 px-4">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-10 w-full max-w-md">
+        <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
+          Create account
+        </h2>
+
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            name="firstName"
+            placeholder="First name"
+            value={form.firstName}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 rounded-lg p-3"
+          />
+
+          <input
+            name="lastName"
+            placeholder="Last name"
+            value={form.lastName}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 rounded-lg p-3"
+          />
+
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 rounded-lg p-3"
+          />
+
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="bg-gray-50 border border-gray-300 rounded-lg p-3"
+          />
+
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="bg-gray-50 border border-gray-300 rounded-lg p-3"
+          >
+            <option value="driver">Driver</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <button
+            type="submit"
+            className="bg-gray-800 text-white rounded-lg p-3 font-semibold hover:bg-gray-900"
+          >
+            Signup
+          </button>
+        </form>
+
+        <p className="mt-4 text-center text-gray-500">
+          Already have an account?{" "}
+          <Link href="/" className="text-gray-800 font-medium hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 export default function signupPage() {
 	const router = useRouter();
 	const [form, setForm] = useState({

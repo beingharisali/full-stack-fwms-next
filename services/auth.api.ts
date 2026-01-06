@@ -8,6 +8,7 @@ export async function login(
 	const res = await http.post("/auth/login", { email, password });
 	return res.data;
 }
+
 export async function register(
 	firstName: string,
 	lastName: string,
@@ -21,6 +22,16 @@ export async function register(
 		email,
 		password,
 		role,
+	});
+	return res.data;
+}
+
+// ✅ Get all users
+export async function getAllUsers(token: string): Promise<User[]> {
+	const res = await http.get("/auth/users", {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
 	});
 	return res.data;
 }
