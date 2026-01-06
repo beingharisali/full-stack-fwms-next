@@ -31,7 +31,6 @@ export default function ManagerPage() {
       return;
     }
 
-    
     setDrivers([
       { id: 1, name: "John Doe" },
       { id: 2, name: "Jane Smith" },
@@ -53,7 +52,6 @@ export default function ManagerPage() {
     }
   };
 
-  
   const handleView = (type: "trips" | "drivers") => {
     if (type === "trips" && trips.length === 0) {
       fetchTripsSummary();
@@ -67,11 +65,9 @@ export default function ManagerPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      
       <Navbar setView={handleView} currentView={view} />
 
       <main className="p-8 flex-1">
-  
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold mb-2 text-gray-900">
@@ -94,7 +90,6 @@ export default function ManagerPage() {
           </div>
         </div>
 
-      
         {view === "trips" && (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <h2 className="text-xl font-bold p-6 border-b text-gray-900">
@@ -130,16 +125,39 @@ export default function ManagerPage() {
                   trips.map(trip => (
                     <tr key={trip._id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-3">{trip.departure}</td>
+
                       <td className="px-4 py-3">
                         {new Date(trip.date).toLocaleDateString()}
                       </td>
+
                       <td className="px-4 py-3">{trip.destination}</td>
+
+                      {/* ✅ Departure Time with AM/PM */}
                       <td className="px-4 py-3">
-                        {trip.departureTime || "-"}
+                        {trip.departureTime
+                          ? new Date(
+                              `1970-01-01T${trip.departureTime}`
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "-"}
                       </td>
+
+                      {/* ✅ Arrival Time with AM/PM */}
                       <td className="px-4 py-3">
-                        {trip.arrivalTime || "-"}
+                        {trip.arrivalTime
+                          ? new Date(
+                              `1970-01-01T${trip.arrivalTime}`
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "-"}
                       </td>
+
                       <td className="px-4 py-3">
                         <button
                           onClick={() =>
@@ -158,7 +176,6 @@ export default function ManagerPage() {
           </div>
         )}
 
-        
         {view === "drivers" && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold mb-4 text-gray-900">
