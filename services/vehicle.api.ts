@@ -11,12 +11,17 @@ export const getVehicle = async (id: string): Promise<Vehicle> => {
   return response.data.vehicle;
 };
 
-export const createVehicle = async (vehicle: Omit<Vehicle, '_id' | 'createdAt' | 'updatedAt'>): Promise<Vehicle> => {
-  const response = await http.post('/vehicle', vehicle);
+export const createVehicle = async (
+  vehicle: Omit<Vehicle, '_id' | 'createdAt' | 'updatedAt'>
+): Promise<Vehicle> => {
+  const response = await http.post('/vehicles', vehicle); // ✅ FIXED
   return response.data.vehicle;
 };
 
-export const updateVehicle = async (id: string, vehicle: Partial<Vehicle>): Promise<Vehicle> => {
+export const updateVehicle = async (
+  id: string,
+  vehicle: Partial<Vehicle>
+): Promise<Vehicle> => {
   const response = await http.put(`/vehicles/${id}`, vehicle);
   return response.data.vehicle;
 };
