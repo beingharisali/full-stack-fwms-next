@@ -1,26 +1,72 @@
-import http from './http';
-import { Driver } from '../types/driver';
+import axios from "axios";
+import http from "./http";
+import { Driver } from "../types/driver";
 
+/* GET ALL DRIVERS */
 export const getDrivers = async (): Promise<Driver[]> => {
-  const response = await http.get('/drivers');
-  return response.data.drivers;
+  try {
+    const res = await http.get("/drivers");
+    return res.data.drivers;
+  } catch (err) {
+    if (axios.isAxiosError(err)) console.error("Get Drivers Error:", err.response?.data);
+    throw err;
+  }
 };
 
+/* GET SINGLE DRIVER */
 export const getDriver = async (id: string): Promise<Driver> => {
-  const response = await http.get(`/drivers/${id}`);
-  return response.data.driver;
+  if (!id) throw new Error("Driver ID is required");
+  try {
+    const res = await http.get(`/drivers/${id}`);
+    return res.data.driver;
+  } catch (err) {
+    if (axios.isAxiosError(err)) console.error("Get Driver Error:", err.response?.data);
+    throw err;
+  }
 };
 
-export const createDriver = async (driver: Omit<Driver, '_id' | 'createdAt' | 'updatedAt'>): Promise<Driver> => {
-  const response = await http.post('/drivers', driver);
-  return response.data.driver;
+// Alias for Update page
+export const getDriverById = getDriver;
+
+/* CREATE DRIVER */
+export type CreateDriverDTO = {
+  name: string;
+  licenseNumber: string;
+  licenseType: "HTV" | "LTV";
 };
 
+export const createDriver = async (driver: CreateDriverDTO): Promise<Driver> => {
+  if (!driver.name || !driver.licenseNumber || !driver.licenseType)
+    throw new Error("Missing required driver fields");
+
+  try {
+    const res = await http.post("/drivers", driver);
+    return res.data.driver;
+  } catch (err) {
+    if (axios.isAxiosError(err)) console.error("Create Driver Error:", err.response?.data);
+    throw err;
+  }
+};
+
+/* UPDATE DRIVER */
 export const updateDriver = async (id: string, driver: Partial<Driver>): Promise<Driver> => {
-  const response = await http.put(`/drivers/${id}`, driver);
-  return response.data.driver;
+  if (!id) throw new Error("Driver ID is required");
+  try {
+    const res = await http.put(`/drivers/${id}`, driver);
+    return res.data.driver;
+  } catch (err) {
+    if (axios.isAxiosError(err)) console.error("Update Driver Error:", err.response?.data);
+    throw err;
+  }
 };
 
+/* DELETE DRIVER */
 export const deleteDriver = async (id: string): Promise<void> => {
-  await http.delete(`/drivers/${id}`);
+  if (!id) throw new Error("Driver ID is required");
+  try {
+    await http.delete(`/drivers/${id}`);
+  } catch (err) {
+    if (axios.isAxiosError(err)) console.error("Delete Driver Error:", err.response?.data);
+    throw err;
+  }
 };
