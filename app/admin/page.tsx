@@ -21,12 +21,6 @@ export default function AdminPage() {
       return;
     }
 
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    setUser(payload);
-  }, []);
-
-  const handleLogout = () => {
-    document.cookie = "token=; path=/; max-age=0";
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       setUser(payload);
@@ -62,30 +56,6 @@ export default function AdminPage() {
 
   if (!user) return <div>Loading...</div>;
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">
-              Welcome, {user.firstName} {user.lastName}
-            </h1>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Logout
-            </button>
-          </div>
-          <p className="text-gray-600 mt-2">Role: {user.role}</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
-          <p className="text-gray-600">
-            You have successfully logged in to the Fleet Waste Management System.
-          </p>
-        </div>
   // Example percentages
   const driversPercentage = drivers.length > 0 ? Math.min(drivers.length * 10, 100) : 0;
   const vehiclesPercentage = vehicles.length > 0 ? Math.min(vehicles.length * 15, 100) : 0;

@@ -8,7 +8,7 @@ function Sidebar() {
 			{/* <h1 className="text-2xl font-bold mb-6 text-white">Admin Panel</h1> */}
 			<nav className="flex flex-col space-y-2">
 				<Link
-					href="#dashboard"
+					href="/admin"
 					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
 					Dashboard
 				</Link>
