@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../manager/component/navbar";
 import { getTrips } from "@/services/trip.api";
 import { Trip } from "@/types/trip";
+import { getDrivers } from "@/services/driver.api";
 
 export default function ManagerPage() {
   const router = useRouter();
@@ -14,6 +15,10 @@ export default function ManagerPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [drivers, setDrivers] = useState<any[]>([]);
+
+  // 🔹 FILTER STATES
+  const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
+  const [tripSort, setTripSort] = useState<"none" | "time">("none");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -31,12 +36,16 @@ export default function ManagerPage() {
       return;
     }
 
-    setDrivers([
-      { id: 1, name: "John Doe" },
-      { id: 2, name: "Jane Smith" },
-      { id: 3, name: "Ali Khan" },
-    ]);
+    const driverFetcher = async () => {
+      try {
+        const res = await getDrivers();
+        setDrivers(res);
+      } catch {
+        console.log("error occured in fetching drivers");
+      }
+    };
 
+    driverFetcher();
     fetchTripsSummary();
   }, [router]);
 
@@ -58,6 +67,23 @@ export default function ManagerPage() {
     }
     setView(type);
   };
+
+  // 🔹 FILTERED DRIVERS
+  const filteredDrivers =
+    driverLicenseFilter === "all"
+      ? drivers
+      : drivers.filter(
+          driver => driver.licenseType === driverLicenseFilter
+        );
+
+  // 🔹 SORTED TRIPS (EARLY FIRST)
+  const sortedTrips =
+    tripSort === "time"
+      ? [...trips].sort((a, b) => {
+          if (!a.departureTime || !b.departureTime) return 0;
+          return a.departureTime.localeCompare(b.departureTime);
+        })
+      : trips;
 
   if (!user) {
     return (
@@ -81,7 +107,6 @@ export default function ManagerPage() {
             <p className="text-3xl font-bold text-blue-600">
               {trips.length}
             </p>
-            <p className="text-gray-600">All trips in system</p>
           </div>
 
           <div className="rounded-xl bg-white p-6 shadow-md">
@@ -91,7 +116,6 @@ export default function ManagerPage() {
             <p className="text-3xl font-bold text-green-600">
               {drivers.length}
             </p>
-            <p className="text-gray-600">Drivers added by admin</p>
           </div>
         </div>
 
@@ -102,6 +126,20 @@ export default function ManagerPage() {
               Trips
             </h2>
 
+            {/* ✅ TRIP FILTER (BRIGHT) */}
+            <div className="p-4">
+              <select
+                value={tripSort}
+                onChange={e =>
+                  setTripSort(e.target.value as "none" | "time")
+                }
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="none">Normal Order</option>
+                <option value="time">Early Departure First</option>
+              </select>
+            </div>
+
             <table className="w-full text-left">
               <thead className="bg-gray-100 text-sm text-gray-700">
                 <tr>
@@ -109,26 +147,18 @@ export default function ManagerPage() {
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Destination</th>
                   <th className="px-4 py-3">Departure Time</th>
-                  <th className="px-4 py-3">Arrival Time</th>
-                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
 
               <tbody className="text-gray-800">
                 {loadingTrips ? (
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-gray-600">
+                    <td colSpan={4} className="p-6 text-center text-gray-600">
                       Loading trips...
                     </td>
                   </tr>
-                ) : trips.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-6 text-center text-gray-600">
-                      No trips available
-                    </td>
-                  </tr>
                 ) : (
-                  trips.map(trip => (
+                  sortedTrips.map(trip => (
                     <tr
                       key={trip._id}
                       className="border-b hover:bg-gray-50"
@@ -138,40 +168,8 @@ export default function ManagerPage() {
                         {new Date(trip.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">{trip.destination}</td>
-
                       <td className="px-4 py-3">
-                        {trip.departureTime
-                          ? new Date(
-                              `1970-01-01T${trip.departureTime}`
-                            ).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })
-                          : "-"}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        {trip.arrivalTime
-                          ? new Date(
-                              `1970-01-01T${trip.arrivalTime}`
-                            ).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })
-                          : "-"}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() =>
-                            router.push(`/trip/update/${trip._id}`)
-                          }
-                          className="rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-500 transition"
-                        >
-                          Edit
-                        </button>
+                        {trip.departureTime || "-"}
                       </td>
                     </tr>
                   ))
@@ -188,32 +186,46 @@ export default function ManagerPage() {
               Drivers
             </h2>
 
+            {/* ✅ DRIVER FILTER (BRIGHT) */}
+            <div className="mb-4">
+              <select
+                value={driverLicenseFilter}
+                onChange={e =>
+                  setDriverLicenseFilter(e.target.value)
+                }
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">All License Types</option>
+                <option value="LTV">LTV</option>
+                <option value="HTV">HTV</option>
+                <option value="MCV">MCV</option>
+              </select>
+            </div>
+
             <table className="w-full text-left">
               <thead className="bg-gray-100 text-sm text-gray-700">
                 <tr>
-                  <th className="px-4 py-3">ID</th>
                   <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">License No</th>
+                  <th className="px-4 py-3">License Type</th>
                 </tr>
               </thead>
 
               <tbody className="text-gray-800">
-                {drivers.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="p-6 text-center text-gray-600">
-                      No drivers found
+                {filteredDrivers.map(driver => (
+                  <tr
+                    key={driver._id}
+                    className="border-b hover:bg-gray-50"
+                  >
+                    <td className="px-4 py-3">{driver.name}</td>
+                    <td className="px-4 py-3">
+                      {driver.licenseNumber}
+                    </td>
+                    <td className="px-4 py-3">
+                      {driver.licenseType}
                     </td>
                   </tr>
-                ) : (
-                  drivers.map(driver => (
-                    <tr
-                      key={driver.id}
-                      className="border-b hover:bg-gray-50"
-                    >
-                      <td className="px-4 py-3">{driver.id}</td>
-                      <td className="px-4 py-3">{driver.name}</td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>

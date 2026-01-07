@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import DriverNavbar from "../driver/component/navbar";
-import { getAssignedTrips } from "../../services/trip.api";
+import { getAssignedTrips } from "../../../services/trip.api";
 
 interface Trip {
   id: number;
