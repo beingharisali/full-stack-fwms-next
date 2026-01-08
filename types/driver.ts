@@ -1,7 +1,8 @@
 export type Driver = {
-  id: string;
+  _id: string;            
+  id?: string;          
   name: string;
   licenseNumber: string;
-  licenseType: 'HTV' | 'LTV'; // 👈 backend enum jaisa
+  licenseType: 'HTV' | 'LTV';
   available: boolean;
 };

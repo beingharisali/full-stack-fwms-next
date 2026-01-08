@@ -87,7 +87,7 @@ export default function CreateDriver() {
                 className="rounded-lg border p-3"
               />
 
-              {/* 🔥 FIXED: licenseType instead of vehicleType */}
+             
               <select
                 value={licenseType}
                 onChange={(e) =>
