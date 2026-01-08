@@ -19,11 +19,12 @@ export default function ManagerPage() {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(false);
 
-  // filters
+  // SORT & FILTER
   const [tripSort, setTripSort] = useState<"none" | "time" | "name">("none");
+  const [driverSort, setDriverSort] = useState<"none" | "name">("none");
   const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
 
-  // pagination
+  // PAGINATION
   const [tripPage, setTripPage] = useState(1);
   const [driverPage, setDriverPage] = useState(1);
 
@@ -65,7 +66,7 @@ export default function ManagerPage() {
     setDriverPage(1);
   };
 
-  // ---------- TRIPS ----------
+  /* ================= TRIPS ================= */
   const sortedTrips =
     tripSort === "time"
       ? [...trips].sort((a, b) =>
@@ -83,14 +84,21 @@ export default function ManagerPage() {
     tripPage * ITEMS_PER_PAGE
   );
 
-  // ---------- DRIVERS ----------
+  /* ================= DRIVERS ================= */
   const filteredDrivers =
     driverLicenseFilter === "all"
       ? drivers
       : drivers.filter(d => d.licenseType === driverLicenseFilter);
 
-  const driverTotalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
-  const paginatedDrivers = filteredDrivers.slice(
+  const sortedDrivers =
+    driverSort === "name"
+      ? [...filteredDrivers].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      : filteredDrivers;
+
+  const driverTotalPages = Math.ceil(sortedDrivers.length / ITEMS_PER_PAGE);
+  const paginatedDrivers = sortedDrivers.slice(
     (driverPage - 1) * ITEMS_PER_PAGE,
     driverPage * ITEMS_PER_PAGE
   );
@@ -122,7 +130,8 @@ export default function ManagerPage() {
                   setTripSort(e.target.value as any);
                   setTripPage(1);
                 }}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="none">Normal Order</option>
                 <option value="time">Early Departure First</option>
@@ -164,12 +173,11 @@ export default function ManagerPage() {
               </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="flex items-center justify-between p-4">
               <button
                 disabled={tripPage === 1}
                 onClick={() => setTripPage(p => p - 1)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black hover:bg-gray-100 disabled:opacity-50"
               >
                 Previous
               </button>
@@ -181,7 +189,7 @@ export default function ManagerPage() {
               <button
                 disabled={tripPage === tripTotalPages}
                 onClick={() => setTripPage(p => p + 1)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black hover:bg-gray-100 disabled:opacity-50"
               >
                 Next
               </button>
@@ -196,19 +204,33 @@ export default function ManagerPage() {
               Drivers
             </h2>
 
-            <div className="p-4">
+            <div className="flex flex-wrap gap-4 p-4">
               <select
                 value={driverLicenseFilter}
                 onChange={e => {
                   setDriverLicenseFilter(e.target.value);
                   setDriverPage(1);
                 }}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All License Types</option>
                 <option value="LTV">LTV</option>
                 <option value="HTV">HTV</option>
                 <option value="MCV">MCV</option>
+              </select>
+
+              <select
+                value={driverSort}
+                onChange={e => {
+                  setDriverSort(e.target.value as any);
+                  setDriverPage(1);
+                }}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="none">Normal Order</option>
+                <option value="name">Name (A–Z)</option>
               </select>
             </div>
 
@@ -217,7 +239,7 @@ export default function ManagerPage() {
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">License No</th>
-                  <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">License Type</th>
                 </tr>
               </thead>
 
@@ -225,23 +247,18 @@ export default function ManagerPage() {
                 {paginatedDrivers.map(driver => (
                   <tr key={driver._id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">{driver.name}</td>
-                    <td className="px-4 py-3">
-                      {driver.licenseNumber}
-                    </td>
-                    <td className="px-4 py-3">
-                      {driver.licenseType}
-                    </td>
+                    <td className="px-4 py-3">{driver.licenseNumber}</td>
+                    <td className="px-4 py-3">{driver.licenseType}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="flex items-center justify-between p-4">
               <button
                 disabled={driverPage === 1}
                 onClick={() => setDriverPage(p => p - 1)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black hover:bg-gray-100 disabled:opacity-50"
               >
                 Previous
               </button>
@@ -253,7 +270,7 @@ export default function ManagerPage() {
               <button
                 disabled={driverPage === driverTotalPages}
                 onClick={() => setDriverPage(p => p + 1)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black hover:bg-gray-100 disabled:opacity-50"
               >
                 Next
               </button>
