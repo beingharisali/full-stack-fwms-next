@@ -14,27 +14,31 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ PAGINATION STATES (NEW)
+  
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 10; // drivers per page
+  const limit = 10;
 
-  // 🔁 UPDATED: runs when page changes
+  
+  const [licenseType, setLicenseType] = useState("");
+  const [available, setAvailable] = useState("");
+
+  
   useEffect(() => {
     fetchDrivers();
-  }, [page]);
+  }, [page, licenseType, available]);
 
   const fetchDrivers = async () => {
     try {
       setLoading(true);
 
-      // ✅ UPDATED: pass page & limit
-      const data = await getDrivers(page, limit);
+      const data = await getDrivers(page, limit, {
+        licenseType,
+        available,
+      });
 
-      // 👇 assuming backend response structure
       setDrivers(data.drivers);
       setTotalPages(data.totalPages);
-
     } catch (err) {
       setError("Failed to fetch drivers");
       console.error(err);
@@ -48,8 +52,6 @@ export default function DriversPage() {
 
     try {
       await deleteDriver(driverId);
-
-      // keep pagination safe
       setDrivers((prev) => prev.filter((d) => d._id !== driverId));
     } catch (err) {
       alert("Failed to delete driver");
@@ -76,6 +78,35 @@ export default function DriversPage() {
             >
               Create Driver
             </button>
+          </div>
+
+         
+          <div className="flex gap-4 mb-6">
+            <select
+              value={licenseType}
+              onChange={(e) => {
+                setPage(1);
+                setLicenseType(e.target.value);
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="">All License Types</option>
+              <option value="HTV">HTV</option>
+              <option value="LTV">LTV</option>
+            </select>
+
+            <select
+              value={available}
+              onChange={(e) => {
+                setPage(1);
+                setAvailable(e.target.value);
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="">All Drivers</option>
+              <option value="true">Available</option>
+              <option value="false">Unavailable</option>
+            </select>
           </div>
 
           {drivers.length === 0 ? (
@@ -118,7 +149,7 @@ export default function DriversPage() {
                 </tbody>
               </table>
 
-              {/* ✅ PAGINATION UI */}
+            
               <div className="flex justify-center items-center gap-4 mt-6">
                 <button
                   onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
