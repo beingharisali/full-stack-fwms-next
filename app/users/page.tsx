@@ -6,7 +6,7 @@ import Navbar from "../component/navbar";
 import { getAllUsers, deleteUser } from "../../services/auth.api";
 
 type User = {
-  _id: string; // MongoDB ID
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -19,6 +19,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5; // number of users per page
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,15 +56,14 @@ export default function AdminUsersPage() {
       setUsers((prev) => prev.filter((user) => user._id !== _id));
     } catch (err) {
       console.error(err);
-      alert("Failed to delete user. Check backend route.");
+      alert("Failed to delete user");
     }
   };
 
-  // Filter by role first
+  // ---------------- Filter, Search, Sort ----------------
   let filteredUsers =
     filterRole === "all" ? users : users.filter((u) => u.role === filterRole);
 
-  // Apply name search (firstName + lastName)
   if (searchName.trim() !== "") {
     filteredUsers = filteredUsers.filter((u) =>
       `${u.firstName} ${u.lastName}`
@@ -69,6 +71,24 @@ export default function AdminUsersPage() {
         .includes(searchName.toLowerCase())
     );
   }
+
+  filteredUsers.sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+
+  // ---------------- Pagination ----------------
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -83,9 +103,8 @@ export default function AdminUsersPage() {
 
           {!loading && !error && users.length > 0 && (
             <>
-              {/* Filters */}
+              {/* Filters, Search, Sort */}
               <div className="flex flex-wrap gap-4 mb-4">
-                {/* Role Filter */}
                 <div>
                   <label className="mr-2 font-semibold">Filter by Role:</label>
                   <select
@@ -100,7 +119,6 @@ export default function AdminUsersPage() {
                   </select>
                 </div>
 
-                {/* Name Search */}
                 <div>
                   <label className="mr-2 font-semibold">Search by Name:</label>
                   <input
@@ -110,6 +128,18 @@ export default function AdminUsersPage() {
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)}
                   />
+                </div>
+
+                <div>
+                  <label className="mr-2 font-semibold">Sort by Name:</label>
+                  <button
+                    onClick={() =>
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    }
+                    className="border px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                  >
+                    {sortOrder === "asc" ? "Ascending ↑" : "Descending ↓"}
+                  </button>
                 </div>
               </div>
 
@@ -125,8 +155,8 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map((user) => (
+                    {paginatedUsers.length > 0 ? (
+                      paginatedUsers.map((user) => (
                         <tr key={user._id} className="border-b border-gray-200">
                           <td className="px-4 py-3">{`${user.firstName} ${user.lastName}`}</td>
                           <td className="px-4 py-3">{user.email}</td>
@@ -151,6 +181,39 @@ export default function AdminUsersPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-4 gap-2">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => goToPage(page)}
+                      className={`px-3 py-1 border rounded hover:bg-gray-200 ${
+                        page === currentPage ? "bg-gray-300 font-bold" : ""
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </>
           )}
 
