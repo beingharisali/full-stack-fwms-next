@@ -48,3 +48,4 @@ export async function getAllUsers(token: string): Promise<User[]> {
 export async function logoutApi(): Promise<void> {
 	localStorage.removeItem("token");
 }
+console.log()
