@@ -13,7 +13,7 @@ function Sidebar() {
 					Dashboard
 				</Link>
 				<Link
-					href="#users"
+					href="/users"
 					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
 					Users
 				</Link>
