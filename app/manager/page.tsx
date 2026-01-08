@@ -18,7 +18,9 @@ export default function ManagerPage() {
 
   // 🔹 FILTER STATES
   const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
-  const [tripSort, setTripSort] = useState<"none" | "time">("none");
+  const [tripSort, setTripSort] = useState<
+    "none" | "time" | "name"
+  >("none");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -76,13 +78,18 @@ export default function ManagerPage() {
           driver => driver.licenseType === driverLicenseFilter
         );
 
-  // 🔹 SORTED TRIPS (EARLY FIRST)
+  // 🔹 SORTED TRIPS (TIME + NAME)
   const sortedTrips =
     tripSort === "time"
-      ? [...trips].sort((a, b) => {
-          if (!a.departureTime || !b.departureTime) return 0;
-          return a.departureTime.localeCompare(b.departureTime);
-        })
+      ? [...trips].sort((a, b) =>
+          (a.departureTime || "").localeCompare(
+            b.departureTime || ""
+          )
+        )
+      : tripSort === "name"
+      ? [...trips].sort((a, b) =>
+          a.destination.localeCompare(b.destination)
+        )
       : trips;
 
   if (!user) {
@@ -126,17 +133,22 @@ export default function ManagerPage() {
               Trips
             </h2>
 
-            {/* ✅ TRIP FILTER (BRIGHT) */}
+            {/* 🔆 BRIGHT SORT DROPDOWN */}
             <div className="p-4">
               <select
                 value={tripSort}
                 onChange={e =>
-                  setTripSort(e.target.value as "none" | "time")
+                  setTripSort(
+                    e.target.value as "none" | "time" | "name"
+                  )
                 }
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="none">Normal Order</option>
                 <option value="time">Early Departure First</option>
+                <option value="name">
+                  Destination Name (A–Z)
+                </option>
               </select>
             </div>
 
@@ -163,11 +175,17 @@ export default function ManagerPage() {
                       key={trip._id}
                       className="border-b hover:bg-gray-50"
                     >
-                      <td className="px-4 py-3">{trip.departure}</td>
                       <td className="px-4 py-3">
-                        {new Date(trip.date).toLocaleDateString()}
+                        {trip.departure}
                       </td>
-                      <td className="px-4 py-3">{trip.destination}</td>
+                      <td className="px-4 py-3">
+                        {new Date(
+                          trip.date
+                        ).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        {trip.destination}
+                      </td>
                       <td className="px-4 py-3">
                         {trip.departureTime || "-"}
                       </td>
@@ -186,7 +204,6 @@ export default function ManagerPage() {
               Drivers
             </h2>
 
-            {/* ✅ DRIVER FILTER (BRIGHT) */}
             <div className="mb-4">
               <select
                 value={driverLicenseFilter}
@@ -217,7 +234,9 @@ export default function ManagerPage() {
                     key={driver._id}
                     className="border-b hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3">{driver.name}</td>
+                    <td className="px-4 py-3">
+                      {driver.name}
+                    </td>
                     <td className="px-4 py-3">
                       {driver.licenseNumber}
                     </td>
