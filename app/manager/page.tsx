@@ -7,6 +7,8 @@ import { getTrips } from "@/services/trip.api";
 import { Trip } from "@/types/trip";
 import { getDrivers } from "@/services/driver.api";
 
+const TRIPS_PER_PAGE = 5;
+
 export default function ManagerPage() {
   const router = useRouter();
 
@@ -18,9 +20,10 @@ export default function ManagerPage() {
 
   // 🔹 FILTER STATES
   const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
-  const [tripSort, setTripSort] = useState<
-    "none" | "time" | "name"
-  >("none");
+  const [tripSort, setTripSort] = useState<"none" | "time" | "name">("none");
+
+  // 🔹 PAGINATION STATE
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -64,10 +67,8 @@ export default function ManagerPage() {
   };
 
   const handleView = (type: "trips" | "drivers") => {
-    if (type === "trips" && trips.length === 0) {
-      fetchTripsSummary();
-    }
     setView(type);
+    setCurrentPage(1); // reset page on view change
   };
 
   // 🔹 FILTERED DRIVERS
@@ -78,7 +79,7 @@ export default function ManagerPage() {
           driver => driver.licenseType === driverLicenseFilter
         );
 
-  // 🔹 SORTED TRIPS (TIME + NAME)
+  // 🔹 SORTED TRIPS
   const sortedTrips =
     tripSort === "time"
       ? [...trips].sort((a, b) =>
@@ -91,6 +92,14 @@ export default function ManagerPage() {
           a.destination.localeCompare(b.destination)
         )
       : trips;
+
+  // 🔹 PAGINATED TRIPS
+  const totalPages = Math.ceil(sortedTrips.length / TRIPS_PER_PAGE);
+  const startIndex = (currentPage - 1) * TRIPS_PER_PAGE;
+  const paginatedTrips = sortedTrips.slice(
+    startIndex,
+    startIndex + TRIPS_PER_PAGE
+  );
 
   if (!user) {
     return (
@@ -133,22 +142,19 @@ export default function ManagerPage() {
               Trips
             </h2>
 
-            {/* 🔆 BRIGHT SORT DROPDOWN */}
-            <div className="p-4">
+            {/* 🔆 SORT DROPDOWN */}
+            <div className="p-4 flex items-center gap-4">
               <select
                 value={tripSort}
-                onChange={e =>
-                  setTripSort(
-                    e.target.value as "none" | "time" | "name"
-                  )
-                }
+                onChange={e => {
+                  setTripSort(e.target.value as any);
+                  setCurrentPage(1);
+                }}
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="none">Normal Order</option>
                 <option value="time">Early Departure First</option>
-                <option value="name">
-                  Destination Name (A–Z)
-                </option>
+                <option value="name">Destination Name (A–Z)</option>
               </select>
             </div>
 
@@ -165,27 +171,21 @@ export default function ManagerPage() {
               <tbody className="text-gray-800">
                 {loadingTrips ? (
                   <tr>
-                    <td colSpan={4} className="p-6 text-center text-gray-600">
+                    <td colSpan={4} className="p-6 text-center">
                       Loading trips...
                     </td>
                   </tr>
                 ) : (
-                  sortedTrips.map(trip => (
+                  paginatedTrips.map(trip => (
                     <tr
                       key={trip._id}
                       className="border-b hover:bg-gray-50"
                     >
+                      <td className="px-4 py-3">{trip.departure}</td>
                       <td className="px-4 py-3">
-                        {trip.departure}
+                        {new Date(trip.date).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3">
-                        {new Date(
-                          trip.date
-                        ).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        {trip.destination}
-                      </td>
+                      <td className="px-4 py-3">{trip.destination}</td>
                       <td className="px-4 py-3">
                         {trip.departureTime || "-"}
                       </td>
@@ -194,6 +194,29 @@ export default function ManagerPage() {
                 )}
               </tbody>
             </table>
+
+            {/* 🔹 PAGINATION CONTROLS */}
+            <div className="flex items-center justify-between p-4">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="rounded-lg border px-4 py-2 text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100"
+              >
+                Previous
+              </button>
+
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="rounded-lg border px-4 py-2 text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
 
@@ -234,9 +257,7 @@ export default function ManagerPage() {
                     key={driver._id}
                     className="border-b hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3">
-                      {driver.name}
-                    </td>
+                    <td className="px-4 py-3">{driver.name}</td>
                     <td className="px-4 py-3">
                       {driver.licenseNumber}
                     </td>
