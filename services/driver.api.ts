@@ -2,24 +2,41 @@ import axios from "axios";
 import http from "./http";
 import { Driver } from "../types/driver";
 
-/* ================================
-   TYPES
-================================ */
+
 export interface DriversResponse {
   drivers: Driver[];
   totalPages: number;
 }
 
-/* ================================
-   GET ALL DRIVERS (WITH PAGINATION)
-   Backward compatible ✔
-================================ */
+
+export type DriverFilters = {
+  licenseType?: string;
+  available?: string;
+};
+
+
 export const getDrivers = async (
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  filters?: DriverFilters
 ): Promise<DriversResponse> => {
   try {
-    const res = await http.get(`/drivers?page=${page}&limit=${limit}`);
+    const params = new URLSearchParams();
+
+    
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+
+    
+    if (filters?.licenseType) {
+      params.append("licenseType", filters.licenseType);
+    }
+
+    if (filters?.available) {
+      params.append("available", filters.available);
+    }
+
+    const res = await http.get(`/drivers?${params.toString()}`);
 
     return {
       drivers: res.data.drivers,
@@ -33,9 +50,7 @@ export const getDrivers = async (
   }
 };
 
-/* ================================
-   GET SINGLE DRIVER
-================================ */
+
 export const getDriver = async (id: string): Promise<Driver> => {
   if (!id) throw new Error("Driver ID is required");
 
@@ -50,12 +65,10 @@ export const getDriver = async (id: string): Promise<Driver> => {
   }
 };
 
-// Alias for Update page
+
 export const getDriverById = getDriver;
 
-/* ================================
-   CREATE DRIVER
-================================ */
+
 export type CreateDriverDTO = {
   name: string;
   licenseNumber: string;
@@ -80,9 +93,7 @@ export const createDriver = async (
   }
 };
 
-/* ================================
-   UPDATE DRIVER
-================================ */
+
 export const updateDriver = async (
   id: string,
   driver: Partial<Driver>
@@ -100,9 +111,7 @@ export const updateDriver = async (
   }
 };
 
-/* ================================
-   DELETE DRIVER
-================================ */
+
 export const deleteDriver = async (id: string): Promise<void> => {
   if (!id) throw new Error("Driver ID is required");
 
