@@ -15,6 +15,9 @@ export default function AdminTripsPage() {
   /* PAGINATION */
   const [tripPage, setTripPage] = useState(1);
 
+  /* FILTER */
+  const [destinationFilter, setDestinationFilter] = useState("all");
+
   useEffect(() => {
     fetchTrips();
   }, []);
@@ -28,13 +31,22 @@ export default function AdminTripsPage() {
     }
   };
 
-  /* ================= PAGINATION LOGIC ================= */
-  const totalPages = Math.ceil(trips.length / ITEMS_PER_PAGE);
+  /* ================= FILTER LOGIC ================= */
+  const filteredTrips =
+    destinationFilter === "all"
+      ? trips
+      : trips.filter(trip => trip.destination === destinationFilter);
 
-  const paginatedTrips = trips.slice(
+  /* ================= PAGINATION LOGIC ================= */
+  const totalPages = Math.ceil(filteredTrips.length / ITEMS_PER_PAGE);
+
+  const paginatedTrips = filteredTrips.slice(
     (tripPage - 1) * ITEMS_PER_PAGE,
     tripPage * ITEMS_PER_PAGE
   );
+
+  /* UNIQUE DESTINATIONS FOR FILTER DROPDOWN */
+  const uniqueDestinations = Array.from(new Set(trips.map(t => t.destination)));
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -48,6 +60,24 @@ export default function AdminTripsPage() {
             <h2 className="border-b p-6 text-xl font-bold text-gray-900">
               Trips
             </h2>
+
+            {/* FILTER */}
+            <div className="p-4">
+              <select
+                value={destinationFilter}
+                onChange={e => {
+                  setDestinationFilter(e.target.value);
+                  setTripPage(1); // reset to first page
+                }}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 shadow-sm
+                           focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">All Destinations</option>
+                {uniqueDestinations.map(dest => (
+                  <option key={dest} value={dest}>{dest}</option>
+                ))}
+              </select>
+            </div>
 
             {/* TABLE */}
             <table className="w-full text-left">
