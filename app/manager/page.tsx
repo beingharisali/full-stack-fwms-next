@@ -116,6 +116,23 @@ export default function ManagerPage() {
       <Navbar setView={handleView} currentView={view} />
 
       <main className="flex-1 p-8">
+        {/* ================= STATS CARDS ================= */}
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">
+              Total Trips
+            </h3>
+            <p className="text-3xl font-bold text-blue-600">{trips.length}</p>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h3 className="mb-1 text-lg font-semibold text-gray-900">
+              Total Drivers
+            </h3>
+            <p className="text-3xl font-bold text-green-600">{drivers.length}</p>
+          </div>
+        </div>
+
         {/* ================= TRIPS ================= */}
         {view === "trips" && (
           <div className="rounded-xl bg-white shadow-md">
