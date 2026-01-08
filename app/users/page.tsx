@@ -7,7 +7,8 @@ import { getAllUsers, deleteUser } from "../../services/auth.api";
 
 type User = {
   _id: string; // MongoDB ID
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: "admin" | "manager" | "driver";
 };
@@ -17,6 +18,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("all");
+  const [searchName, setSearchName] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -55,9 +57,18 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Filter users based on selected role
-  const filteredUsers =
+  // Filter by role first
+  let filteredUsers =
     filterRole === "all" ? users : users.filter((u) => u.role === filterRole);
+
+  // Apply name search (firstName + lastName)
+  if (searchName.trim() !== "") {
+    filteredUsers = filteredUsers.filter((u) =>
+      `${u.firstName} ${u.lastName}`
+        .toLowerCase()
+        .includes(searchName.toLowerCase())
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -72,19 +83,34 @@ export default function AdminUsersPage() {
 
           {!loading && !error && users.length > 0 && (
             <>
-              {/* Role Filter */}
-              <div className="mb-4">
-                <label className="mr-2 font-semibold">Filter:</label>
-                <select
-                  className="border px-2 py-1 rounded"
-                  value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
-                >
-                  <option value="all">All</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="driver">Driver</option>
-                </select>
+              {/* Filters */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                {/* Role Filter */}
+                <div>
+                  <label className="mr-2 font-semibold">Filter by Role:</label>
+                  <select
+                    className="border px-2 py-1 rounded"
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value)}
+                  >
+                    <option value="all">All</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="driver">Driver</option>
+                  </select>
+                </div>
+
+                {/* Name Search */}
+                <div>
+                  <label className="mr-2 font-semibold">Search by Name:</label>
+                  <input
+                    type="text"
+                    placeholder="Enter name..."
+                    className="border px-2 py-1 rounded"
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                  />
+                </div>
               </div>
 
               {/* Users Table */}
@@ -99,30 +125,36 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user._id} className="border-b border-gray-200">
-                        <td className="px-4 py-3">{user.name}</td>
-                        <td className="px-4 py-3">{user.email}</td>
-                        <td className="px-4 py-3 capitalize">{user.role}</td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDelete(user._id)}
-                            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          >
-                            Delete
-                          </button>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <tr key={user._id} className="border-b border-gray-200">
+                          <td className="px-4 py-3">{`${user.firstName} ${user.lastName}`}</td>
+                          <td className="px-4 py-3">{user.email}</td>
+                          <td className="px-4 py-3 capitalize">{user.role}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleDelete(user._id)}
+                              className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-3 text-center">
+                          No users found.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
             </>
           )}
 
-          {!loading && !error && users.length === 0 && (
-            <p>No users found.</p>
-          )}
+          {!loading && !error && users.length === 0 && <p>No users found.</p>}
         </main>
       </div>
     </div>
