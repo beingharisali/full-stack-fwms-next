@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDrivers, deleteDriver } from "@/services/driver.api";
+import { getDrivers, deleteDriver } from "../../services/driver.api";
 import { Driver } from "@/types/driver";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
@@ -24,9 +24,12 @@ export default function DriversPage() {
   const [available, setAvailable] = useState("");
 
   
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   useEffect(() => {
     fetchDrivers();
-  }, [page, licenseType, available]);
+  }, [page, licenseType, available, sortBy, sortOrder]);
 
   const fetchDrivers = async () => {
     try {
@@ -35,6 +38,8 @@ export default function DriversPage() {
       const data = await getDrivers(page, limit, {
         licenseType,
         available,
+        sortBy,
+        sortOrder,
       });
 
       setDrivers(data.drivers);
@@ -52,7 +57,7 @@ export default function DriversPage() {
 
     try {
       await deleteDriver(driverId);
-      setDrivers((prev) => prev.filter((d) => d._id !== driverId));
+      setDrivers((prev) => prev.filter((d) => d.id !== driverId));
     } catch (err) {
       alert("Failed to delete driver");
       console.error(err);
@@ -80,8 +85,8 @@ export default function DriversPage() {
             </button>
           </div>
 
-         
-          <div className="flex gap-4 mb-6">
+          {/* Filters + Sorting */}
+          <div className="flex gap-4 mb-6 flex-wrap">
             <select
               value={licenseType}
               onChange={(e) => {
@@ -107,39 +112,64 @@ export default function DriversPage() {
               <option value="true">Available</option>
               <option value="false">Unavailable</option>
             </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setPage(1);
+                setSortBy(e.target.value);
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="">Sort By</option>
+              <option value="name">Name</option>
+              <option value="licenseType">License Type</option>
+            </select>
+
+            <select
+              value={sortOrder}
+              onChange={(e) => {
+                setPage(1);
+                setSortOrder(e.target.value as "asc" | "desc");
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
           </div>
 
           {drivers.length === 0 ? (
             <p>No drivers found</p>
           ) : (
             <>
-              <table className="w-full bg-white rounded-lg shadow overflow-hidden">
+              <table className="w-full bg-white rounded-lg shadow">
                 <thead className="bg-gray-800 text-white">
                   <tr>
-                    <th className="px-4 py-3 text-left">Name</th>
-                    <th className="px-4 py-3 text-left">License No</th>
-                    <th className="px-4 py-3 text-left">License Type</th>
-                    <th className="px-4 py-3 text-left">Actions</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">License No</th>
+                    <th className="px-4 py-3">License Type</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {drivers.map((driver) => (
-                    <tr key={driver._id} className="border-b">
+                    <tr key={driver.id} className="border-b">
                       <td className="px-4 py-3">{driver.name}</td>
                       <td className="px-4 py-3">{driver.licenseNumber}</td>
                       <td className="px-4 py-3">{driver.licenseType}</td>
                       <td className="px-4 py-3 flex gap-2">
                         <button
                           onClick={() =>
-                            router.push(`/driver/update/${driver._id}`)
+                            router.push(`/driver/update/${driver.id}`)
                           }
-                          className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700"
+                          className="bg-gray-800 text-white px-3 py-1 rounded"
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(driver._id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-400"
+                          onClick={() => handleDelete(driver.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded"
                         >
                           Delete
                         </button>
@@ -149,26 +179,19 @@ export default function DriversPage() {
                 </tbody>
               </table>
 
-            
-              <div className="flex justify-center items-center gap-4 mt-6">
+              <div className="flex justify-center gap-4 mt-6">
                 <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
+                  onClick={() => setPage((p) => p - 1)}
                 >
                   Previous
                 </button>
-
-                <span className="text-sm">
+                <span>
                   Page {page} of {totalPages}
                 </span>
-
                 <button
-                  onClick={() =>
-                    setPage((prev) => Math.min(prev + 1, totalPages))
-                  }
                   disabled={page === totalPages}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
+                  onClick={() => setPage((p) => p + 1)}
                 >
                   Next
                 </button>
