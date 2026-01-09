@@ -91,14 +91,14 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white text-black">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="p-8 flex-1">
-          <h1 className="text-2xl font-bold mb-6">Users</h1>
+        <main className="p-8 flex-1 bg-white text-black">
+          <h1 className="text-2xl font-bold mb-6 text-black">Users</h1>
 
-          {loading && <p>Loading users...</p>}
+          {loading && <p className="text-black">Loading users...</p>}
           {error && <p className="text-red-500">{error}</p>}
 
           {!loading && !error && users.length > 0 && (
@@ -106,9 +106,9 @@ export default function AdminUsersPage() {
               {/* Filters, Search, Sort */}
               <div className="flex flex-wrap gap-4 mb-4">
                 <div>
-                  <label className="mr-2 font-semibold">Filter by Role:</label>
+                  <label className="mr-2 font-semibold text-black">Filter by Role:</label>
                   <select
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 py-1 rounded text-black"
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
                   >
@@ -120,23 +120,23 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="mr-2 font-semibold">Search by Name:</label>
+                  <label className="mr-2 font-semibold text-black">Search by Name:</label>
                   <input
                     type="text"
                     placeholder="Enter name..."
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 py-1 rounded text-black"
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <label className="mr-2 font-semibold">Sort by Name:</label>
+                  <label className="mr-2 font-semibold text-black">Sort by Name:</label>
                   <button
                     onClick={() =>
                       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
                     }
-                    className="border px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                    className="border px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-black"
                   >
                     {sortOrder === "asc" ? "Ascending ↑" : "Descending ↓"}
                   </button>
@@ -144,9 +144,9 @@ export default function AdminUsersPage() {
               </div>
 
               {/* Users Table */}
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-800 text-white">
+              <div className="bg-gray-50 rounded-lg shadow overflow-hidden">
+                <table className="w-full text-black">
+                  <thead className="bg-gray-200 text-black">
                     <tr>
                       <th className="px-4 py-3 text-left">Name</th>
                       <th className="px-4 py-3 text-left">Email</th>
@@ -188,7 +188,7 @@ export default function AdminUsersPage() {
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50 text-black"
                   >
                     Prev
                   </button>
@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`px-3 py-1 border rounded hover:bg-gray-200 ${
+                      className={`px-3 py-1 border rounded hover:bg-gray-200 text-black ${
                         page === currentPage ? "bg-gray-300 font-bold" : ""
                       }`}
                     >
@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50"
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50 text-black"
                   >
                     Next
                   </button>
@@ -217,7 +217,7 @@ export default function AdminUsersPage() {
             </>
           )}
 
-          {!loading && !error && users.length === 0 && <p>No users found.</p>}
+          {!loading && !error && users.length === 0 && <p className="text-black">No users found.</p>}
         </main>
       </div>
     </div>
