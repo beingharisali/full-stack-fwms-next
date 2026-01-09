@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Navbar from '../component/navbar';
-import Sidebar from '../component/sidebar';
-import { Vehicle } from '../../types/vehicle';
-import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '../../services/vehicle.api';
+import React, { useState, useEffect } from "react";
+import Navbar from "../component/navbar";
+import Sidebar from "../component/sidebar";
+import { Vehicle } from "../../types/vehicle";
+import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "../../services/vehicle.api";
 
 function VehiclePage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -13,9 +13,9 @@ function VehiclePage() {
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState({
-    number: '',
-    type: 'Car' as 'Car' | 'Bike' | 'Truck' | 'Van',
-    status: 'Available' as 'Available' | 'In-Use' | 'Maintenance' | 'Inactive'
+    number: "",
+    type: "Car" as "Car" | "Bike" | "Truck" | "Van",
+    status: "Available" as "Available" | "In-Use" | "Maintenance" | "Inactive",
   });
 
   useEffect(() => {
@@ -29,8 +29,8 @@ function VehiclePage() {
       setVehicles(data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch vehicles');
-      console.error('Error fetching vehicles:', err);
+      setError("Failed to fetch vehicles");
+      console.error("Error fetching vehicles:", err);
     } finally {
       setLoading(false);
     }
@@ -38,20 +38,17 @@ function VehiclePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
     try {
       if (editingVehicle) {
-        console.log('Updating vehicle:', editingVehicle._id);
         await updateVehicle(editingVehicle._id!, formData);
       } else {
-        console.log('Creating new vehicle');
         await createVehicle(formData);
       }
       await fetchVehicles();
       resetForm();
     } catch (err) {
-      console.error('Error saving vehicle:', err);
-      setError('Failed to save vehicle');
+      setError("Failed to save vehicle");
+      console.error("Error saving vehicle:", err);
     }
   };
 
@@ -60,28 +57,28 @@ function VehiclePage() {
     setFormData({
       number: vehicle.number,
       type: vehicle.type,
-      status: vehicle.status
+      status: vehicle.status,
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this vehicle?')) {
-      try {
-        await deleteVehicle(id);
-        await fetchVehicles();
-      } catch (err) {
-        setError('Failed to delete vehicle');
-        console.error('Error deleting vehicle:', err);
-      }
+    if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
+
+    try {
+      await deleteVehicle(id);
+      await fetchVehicles();
+    } catch (err) {
+      setError("Failed to delete vehicle");
+      console.error("Error deleting vehicle:", err);
     }
   };
 
   const resetForm = () => {
     setFormData({
-      number: '',
-      type: 'Car',
-      status: 'Available'
+      number: "",
+      type: "Car",
+      status: "Available",
     });
     setEditingVehicle(null);
     setShowForm(false);
@@ -89,30 +86,29 @@ function VehiclePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Available':
-        return 'bg-green-100 text-green-800';
-      case 'In-Use':
-        return 'bg-blue-100 text-blue-800';
-      case 'Maintenance':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Inactive':
-        return 'bg-red-100 text-red-800';
+      case "Available":
+        return "bg-green-100 text-green-800";
+      case "In-Use":
+        return "bg-blue-100 text-blue-800";
+      case "Maintenance":
+        return "bg-yellow-100 text-yellow-800";
+      case "Inactive":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  if (loading) return (
-    <div className="flex min-h-screen bg-gray-100 flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex-1 p-8">
-          <div className="text-center">Loading...</div>
+  if (loading)
+    return (
+      <div className="flex min-h-screen bg-gray-100 flex-col">
+        <Navbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <div className="flex-1 p-8 text-center">Loading...</div>
         </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
@@ -124,9 +120,9 @@ function VehiclePage() {
             <h1 className="text-3xl font-bold text-gray-800">Vehicle Management</h1>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors"
+              className="bg-black text-white border border-black px-4 py-2 rounded hover:bg-gray-800 transition-colors"
             >
-              {showForm ? 'Cancel' : 'Add Vehicle'}
+              {showForm ? "Cancel" : "Add Vehicle"}
             </button>
           </div>
 
@@ -138,14 +134,10 @@ function VehiclePage() {
 
           {showForm && (
             <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">{editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Number
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Number</label>
                   <input
                     type="text"
                     value={formData.number}
@@ -155,13 +147,14 @@ function VehiclePage() {
                     placeholder="e.g., ABC-123"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Type
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
                   <select
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'Car' | 'Bike' | 'Truck' | 'Van' })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value as "Car" | "Bike" | "Truck" | "Van" })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Car">Car</option>
@@ -170,13 +163,17 @@ function VehiclePage() {
                     <option value="Van">Van</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Available' | 'In-Use' | 'Maintenance' | 'Inactive' })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value as "Available" | "In-Use" | "Maintenance" | "Inactive",
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Available">Available</option>
@@ -185,17 +182,18 @@ function VehiclePage() {
                     <option value="Inactive">Inactive</option>
                   </select>
                 </div>
+
                 <div className="flex space-x-2">
                   <button
                     type="submit"
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                    className="bg-black text-white border border-black px-4 py-2 rounded hover:bg-gray-800 transition-colors"
                   >
-                    {editingVehicle ? 'Update' : 'Create'}
+                    {editingVehicle ? "Update" : "Create"}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+                    className="bg-red-600 text-white border border-black px-4 py-2 rounded hover:bg-red-700 transition-colors"
                   >
                     Cancel
                   </button>
@@ -205,47 +203,51 @@ function VehiclePage() {
           )}
 
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full border border-black">
+              <thead className="bg-black text-white border border-black">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
                     Vehicle Number
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-black">
                 {vehicles.map((vehicle) => (
-                  <tr key={vehicle._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={vehicle._id} className="border border-black">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border border-black">
                       {vehicle.number}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-black">
                       {vehicle.type}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(vehicle.status)}`}>
+                    <td className="px-6 py-4 whitespace-nowrap border border-black">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                          vehicle.status
+                        )}`}
+                      >
                         {vehicle.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 border border-black">
                       <button
                         onClick={() => handleEdit(vehicle)}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="bg-black text-white border border-black px-3 py-1 rounded hover:bg-gray-800 transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(vehicle._id!)}
-                        className="text-red-600 hover:text-red-900"
+                        className="bg-red-600 text-white border border-black px-3 py-1 rounded hover:bg-red-700 transition-colors"
                       >
                         Delete
                       </button>
@@ -254,10 +256,9 @@ function VehiclePage() {
                 ))}
               </tbody>
             </table>
+
             {vehicles.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No vehicles found. Add your first vehicle above.
-              </div>
+              <div className="text-center py-8 text-gray-500">No vehicles found. Add your first vehicle above.</div>
             )}
           </div>
         </div>
