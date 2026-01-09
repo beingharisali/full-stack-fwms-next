@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getDriverById, updateDriver, deleteDriver } from "@/services/driver.api";
+import { getDriverById, updateDriver, deleteDriver } from "../../../../services/driver.api";
 import { Driver } from "@/types/driver";
 import Sidebar from "../../../component/sidebar";
 import Navbar from "../../../component/navbar";

@@ -96,7 +96,7 @@ export default function AdminUsersPage() {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="p-8 flex-1">
-          <h1 className="text-2xl font-bold mb-6">Admin Panel – Users</h1>
+          <h1 className="text-2xl font-bold mb-6">Users</h1>
 
           {loading && <p>Loading users...</p>}
           {error && <p className="text-red-500">{error}</p>}

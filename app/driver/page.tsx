@@ -14,16 +14,12 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
 
-  
   const [licenseType, setLicenseType] = useState("");
   const [available, setAvailable] = useState("");
-
-  
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
@@ -34,14 +30,7 @@ export default function DriversPage() {
   const fetchDrivers = async () => {
     try {
       setLoading(true);
-
-      const data = await getDrivers(page, limit, {
-        licenseType,
-        available,
-        sortBy,
-        sortOrder,
-      });
-
+      const data = await getDrivers(page, limit, { licenseType, available, sortBy, sortOrder });
       setDrivers(data.drivers);
       setTotalPages(data.totalPages);
     } catch (err) {
@@ -57,7 +46,7 @@ export default function DriversPage() {
 
     try {
       await deleteDriver(driverId);
-      setDrivers((prev) => prev.filter((d) => d.id !== driverId));
+      setDrivers((prev) => prev.filter((d) => d._id !== driverId)); // ✅ use _id
     } catch (err) {
       alert("Failed to delete driver");
       console.error(err);
@@ -70,7 +59,6 @@ export default function DriversPage() {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
-
       <div className="flex-1 flex flex-col">
         <Navbar />
 
@@ -87,53 +75,25 @@ export default function DriversPage() {
 
           {/* Filters + Sorting */}
           <div className="flex gap-4 mb-6 flex-wrap">
-            <select
-              value={licenseType}
-              onChange={(e) => {
-                setPage(1);
-                setLicenseType(e.target.value);
-              }}
-              className="border px-3 py-2 rounded"
-            >
+            <select value={licenseType} onChange={(e) => { setPage(1); setLicenseType(e.target.value); }} className="border px-3 py-2 rounded">
               <option value="">All License Types</option>
               <option value="HTV">HTV</option>
               <option value="LTV">LTV</option>
             </select>
 
-            <select
-              value={available}
-              onChange={(e) => {
-                setPage(1);
-                setAvailable(e.target.value);
-              }}
-              className="border px-3 py-2 rounded"
-            >
+            <select value={available} onChange={(e) => { setPage(1); setAvailable(e.target.value); }} className="border px-3 py-2 rounded">
               <option value="">All Drivers</option>
               <option value="true">Available</option>
               <option value="false">Unavailable</option>
             </select>
 
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                setPage(1);
-                setSortBy(e.target.value);
-              }}
-              className="border px-3 py-2 rounded"
-            >
+            <select value={sortBy} onChange={(e) => { setPage(1); setSortBy(e.target.value); }} className="border px-3 py-2 rounded">
               <option value="">Sort By</option>
               <option value="name">Name</option>
               <option value="licenseType">License Type</option>
             </select>
 
-            <select
-              value={sortOrder}
-              onChange={(e) => {
-                setPage(1);
-                setSortOrder(e.target.value as "asc" | "desc");
-              }}
-              className="border px-3 py-2 rounded"
-            >
+            <select value={sortOrder} onChange={(e) => { setPage(1); setSortOrder(e.target.value as "asc" | "desc"); }} className="border px-3 py-2 rounded">
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
@@ -154,25 +114,13 @@ export default function DriversPage() {
                 </thead>
                 <tbody>
                   {drivers.map((driver) => (
-                    <tr key={driver.id} className="border-b">
+                    <tr key={driver._id} className="border-b"> {/* ✅ unique key */}
                       <td className="px-4 py-3">{driver.name}</td>
                       <td className="px-4 py-3">{driver.licenseNumber}</td>
                       <td className="px-4 py-3">{driver.licenseType}</td>
                       <td className="px-4 py-3 flex gap-2">
-                        <button
-                          onClick={() =>
-                            router.push(`/driver/update/${driver.id}`)
-                          }
-                          className="bg-gray-800 text-white px-3 py-1 rounded"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(driver.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded"
-                        >
-                          Delete
-                        </button>
+                        <button onClick={() => router.push(`/driver/update/${driver._id}`)} className="bg-gray-800 text-white px-3 py-1 rounded">Edit</button>
+                        <button onClick={() => handleDelete(driver._id)} className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -180,21 +128,9 @@ export default function DriversPage() {
               </table>
 
               <div className="flex justify-center gap-4 mt-6">
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </button>
-                <span>
-                  Page {page} of {totalPages}
-                </span>
-                <button
-                  disabled={page === totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </button>
+                <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
+                <span>Page {page} of {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
               </div>
             </>
           )}
