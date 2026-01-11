@@ -31,9 +31,14 @@ export const getDrivers = async (
     if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
 
     const res = await http.get(`/drivers?${params.toString()}`);
-    return { drivers: res.data.drivers, totalPages: res.data.totalPages };
+    return {
+      drivers: Array.isArray(res.data.drivers) ? res.data.drivers : [],
+      totalPages: Math.ceil((res.data.count || 0) / limit),
+    };
   } catch (err) {
-    if (axios.isAxiosError(err)) console.error("Get Drivers Error:", err.response?.data);
+    if (axios.isAxiosError(err)) {
+      console.error("Get Drivers Error:", err.response?.data ?? err.message);
+    }
     throw err;
   }
 };
@@ -44,7 +49,9 @@ export const getDriverById = async (driverId: string): Promise<Driver> => {
     const res = await http.get(`/drivers/${driverId}`);
     return res.data;
   } catch (err) {
-    if (axios.isAxiosError(err)) console.error("Get Driver By ID Error:", err.response?.data);
+    if (axios.isAxiosError(err)) {
+      console.error("Get Driver By ID Error:", err.response?.data ?? err.message);
+    }
     throw err;
   }
 };
@@ -59,18 +66,25 @@ export const createDriver = async (data: {
     const res = await http.post("/drivers", data);
     return res.data;
   } catch (err) {
-    if (axios.isAxiosError(err)) console.error("Create Driver Error:", err.response?.data);
+    if (axios.isAxiosError(err)) {
+      console.error("Create Driver Error:", err.response?.data ?? err.message);
+    }
     throw err;
   }
 };
 
 // UPDATE driver
-export const updateDriver = async (driverId: string, data: Partial<Driver>): Promise<Driver> => {
+export const updateDriver = async (
+  driverId: string,
+  data: Partial<Driver>
+): Promise<Driver> => {
   try {
     const res = await http.put(`/drivers/${driverId}`, data);
     return res.data;
   } catch (err) {
-    if (axios.isAxiosError(err)) console.error("Update Driver Error:", err.response?.data);
+    if (axios.isAxiosError(err)) {
+      console.error("Update Driver Error:", err.response?.data ?? err.message);
+    }
     throw err;
   }
 };
@@ -81,7 +95,9 @@ export const deleteDriver = async (driverId: string) => {
     const res = await http.delete(`/drivers/${driverId}`);
     return res.data;
   } catch (err) {
-    if (axios.isAxiosError(err)) console.error("Delete Driver Error:", err.response?.data);
+    if (axios.isAxiosError(err)) {
+      console.error("Delete Driver Error:", err.response?.data ?? err.message);
+    }
     throw err;
   }
 };

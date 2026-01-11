@@ -23,6 +23,7 @@ export default function DriversPage() {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  // Fetch drivers when filters/page change
   useEffect(() => {
     fetchDrivers();
   }, [page, licenseType, available, sortBy, sortOrder]);
@@ -30,12 +31,24 @@ export default function DriversPage() {
   const fetchDrivers = async () => {
     try {
       setLoading(true);
-      const data = await getDrivers(page, limit, { licenseType, available, sortBy, sortOrder });
-      setDrivers(data.drivers);
-      setTotalPages(data.totalPages);
+
+      // Convert available filter to boolean if needed
+      const availableValue =
+        available === "true" ? true : available === "false" ? false : undefined;
+
+      const data = await getDrivers(page, limit, {
+        licenseType,
+        available: availableValue as any,
+        sortBy,
+        sortOrder,
+      });
+
+      setDrivers(Array.isArray(data.drivers) ? data.drivers : []);
+      setTotalPages(data.totalPages || 1);
+      setError(null);
     } catch (err) {
-      setError("Failed to fetch drivers");
       console.error(err);
+      setError("Failed to fetch drivers");
     } finally {
       setLoading(false);
     }
@@ -48,13 +61,32 @@ export default function DriversPage() {
       await deleteDriver(driverId);
       setDrivers((prev) => prev.filter((d) => d._id !== driverId));
     } catch (err) {
-      alert("Failed to delete driver");
       console.error(err);
+      alert("Failed to delete driver");
     }
   };
 
-  if (loading) return <p className="p-10 text-black">Loading drivers...</p>;
-  if (error) return <p className="p-10 text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <div className="flex min-h-screen bg-white">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Navbar />
+          <p className="p-10 text-black">Loading drivers...</p>
+        </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex min-h-screen bg-white">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Navbar />
+          <p className="p-10 text-red-500">{error}</p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="flex min-h-screen bg-white text-black">
@@ -63,6 +95,7 @@ export default function DriversPage() {
         <Navbar />
 
         <main className="p-8 flex-1 bg-white text-black">
+          {/* Header + Create */}
           <div className="flex justify-between mb-6">
             <h1 className="text-2xl font-bold text-black">Drivers</h1>
             <button
@@ -77,7 +110,10 @@ export default function DriversPage() {
           <div className="flex gap-4 mb-6 flex-wrap">
             <select
               value={licenseType}
-              onChange={(e) => { setPage(1); setLicenseType(e.target.value); }}
+              onChange={(e) => {
+                setPage(1);
+                setLicenseType(e.target.value);
+              }}
               className="border px-3 py-2 rounded text-black"
             >
               <option value="">All License Types</option>
@@ -87,7 +123,10 @@ export default function DriversPage() {
 
             <select
               value={available}
-              onChange={(e) => { setPage(1); setAvailable(e.target.value); }}
+              onChange={(e) => {
+                setPage(1);
+                setAvailable(e.target.value);
+              }}
               className="border px-3 py-2 rounded text-black"
             >
               <option value="">All Drivers</option>
@@ -97,7 +136,10 @@ export default function DriversPage() {
 
             <select
               value={sortBy}
-              onChange={(e) => { setPage(1); setSortBy(e.target.value); }}
+              onChange={(e) => {
+                setPage(1);
+                setSortBy(e.target.value);
+              }}
               className="border px-3 py-2 rounded text-black"
             >
               <option value="">Sort By</option>
@@ -107,7 +149,10 @@ export default function DriversPage() {
 
             <select
               value={sortOrder}
-              onChange={(e) => { setPage(1); setSortOrder(e.target.value as "asc" | "desc"); }}
+              onChange={(e) => {
+                setPage(1);
+                setSortOrder(e.target.value as "asc" | "desc");
+              }}
               className="border px-3 py-2 rounded text-black"
             >
               <option value="asc">Ascending</option>
@@ -115,17 +160,18 @@ export default function DriversPage() {
             </select>
           </div>
 
+          {/* Table */}
           {drivers.length === 0 ? (
             <p className="text-black">No drivers found</p>
           ) : (
             <>
               <table className="w-full bg-gray-50 rounded-lg shadow text-black">
-                <thead className="bg-gray-200 text-black">
+                <thead className="bg-black text-white">
                   <tr>
-                    <th className="px-4 py-3">Name</th>
-                    <th className="px-4 py-3">License No</th>
-                    <th className="px-4 py-3">License Type</th>
-                    <th className="px-4 py-3">Actions</th>
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-left">License No</th>
+                    <th className="px-4 py-3 text-left">License Type</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,6 +199,7 @@ export default function DriversPage() {
                 </tbody>
               </table>
 
+              {/* Pagination */}
               <div className="flex justify-center gap-4 mt-6 text-black">
                 <button
                   disabled={page === 1}
@@ -161,7 +208,9 @@ export default function DriversPage() {
                 >
                   Previous
                 </button>
-                <span>Page {page} of {totalPages}</span>
+                <span>
+                  Page {page} of {totalPages}
+                </span>
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage((p) => p + 1)}
