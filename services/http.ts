@@ -2,7 +2,7 @@ import axios from "axios";
 
 const baseURL =
   process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ||
-  "http://localhost:5000/api/v1";
+  "http://localhost:3000/api/v1";
 
 const http = axios.create({
   baseURL,

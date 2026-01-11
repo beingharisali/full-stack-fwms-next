@@ -40,7 +40,7 @@ export default function AdminPage() {
         getDrivers(),
         getVehicles()
       ]);
-      setDrivers(driversData);
+      setDrivers(driversData.drivers);
       setVehicles(vehiclesData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);

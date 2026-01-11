@@ -29,13 +29,13 @@ export async function register(
 }
 
 // ✅ Get all users (backend route /auth/users)
-export async function getAllUsers(token: string): Promise<User[]> {
+export async function getAllUsers(token: string): Promise<{ success: boolean; users: User[] }> {
   const res = await http.get("/auth/users", {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  // Backend likely returns { users: [...] }
-  return res.data.users ?? [];
+  // Backend returns { success: true, users: [...] }
+  return res.data;
 }
 
 // ✅ Delete user by ID (backend route /auth/users/:id)
