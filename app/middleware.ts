@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -18,6 +18,11 @@ export function middleware(req: NextRequest) {
 
     // 🔐 Admin routes
     if (pathname.startsWith("/admin") && role !== "admin") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
+
+    // 🔐 Users page (Admin and Manager)
+    if (pathname.startsWith("/users") && !["admin", "manager"].includes(role)) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 

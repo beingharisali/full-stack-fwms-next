@@ -31,6 +31,7 @@ export default function loginPage() {
 		try {
 			const res = await login(form.email, form.password);
 			localStorage.setItem("token", res.token);
+			document.cookie = `token=${res.token}; path=/; max-age=86400`; // 1 day
 			router.push("/admin");
 		} catch (error: any) {
 			setError(error.response?.data?.msg || "Login failed");

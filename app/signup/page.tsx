@@ -38,8 +38,8 @@ export default function SignupPage() {
 
       // Redirect based on role
       switch (form.role) {
-        case "driver":
-          router.push("/driver");
+        case "dashboard":
+          router.push("/dashboard");
           break;
         case "manager":
           router.push("/manager");
