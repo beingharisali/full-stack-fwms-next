@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function AuthGuard({
+export default function Authprovider({
   children,
   allowedRoles,
 }: {
