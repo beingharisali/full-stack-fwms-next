@@ -4,65 +4,45 @@ import { Trip } from "@/types/trip";
 // Create a new trip
 export const createTrip = async (data: Trip): Promise<Trip> => {
   const res = await http.post("/trips", data);
-  return res.data.data; // Backend returns { success: true, data: trip }
+  return res.data.data ?? res.data; // return data.data if exists
 };
 
 // Get all trips
-export async function getTrips(): Promise<Trip[]> {
+export const getTrips = async (): Promise<Trip[]> => {
   const res = await http.get("/trips");
-  return res.data.data; // Backend returns { success: true, data: trips }
-}
-
-// Get trip by ID
-export async function getTripById(id: string): Promise<Trip> {
-  const res = await http.get(`/trips/${id}`);
-  return res.data.data; // Backend returns { success: true, data: trip }
-}
-
-// Update a trip
-export async function updateTrip(id: string, trip: Trip): Promise<Trip> {
-  const res = await http.put(`/trips/${id}`, trip);
-  return res.data.data; // Backend returns { success: true, data: trip }
-}
-
-// Delete a trip
-export async function deleteTrip(id: string): Promise<void> {
-  await http.delete(`/trips/${id}`);
-  // Backend returns { success: true, message: "Trip deleted successfully" }
-}
-import axios from "axios";
-
-
-
-export const getDriverTrips = async () => {
-  const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL}/driver/trips`,
-    { withCredentials: true }
-  );
-  return res.data;
+  return Array.isArray(res.data.data) ? res.data.data : [];
 };
 
+// Get trip by ID
+export const getTripById = async (id: string): Promise<Trip> => {
+  const res = await http.get(`/trips/${id}`);
+  return res.data.data ?? res.data;
+};
 
-// services/trip.api.ts
+// Update a trip
+export const updateTrip = async (id: string, trip: Trip): Promise<Trip> => {
+  const res = await http.put(`/trips/${id}`, trip);
+  return res.data.data ?? res.data;
+};
 
-export const getAssignedTrips = async () => {
+// Delete a trip
+export const deleteTrip = async (id: string): Promise<void> => {
+  await http.delete(`/trips/${id}`);
+};
+
+// Assigned trips (for driver)
+export const getAssignedTrips = async (): Promise<Trip[]> => {
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("/api/trips/assigned", {
+    const res = await http.get("/trips/assigned", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch assigned trips");
-    }
-
-    const data = await res.json();
-    return data; // ye array of trips return kare
+    return Array.isArray(res.data.data) ? res.data.data : [];
   } catch (err) {
     console.error(err);
     return [];
   }
 };
-

@@ -6,7 +6,7 @@ import Navbar from "../component/navbar";
 import { getAllUsers, deleteUser } from "../../services/auth.api";
 
 type User = {
-  _id: string; // MongoDB ID
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -19,6 +19,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("all");
   const [searchName, setSearchName] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5; // number of users per page
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,15 +56,14 @@ export default function AdminUsersPage() {
       setUsers((prev) => prev.filter((user) => user._id !== _id));
     } catch (err) {
       console.error(err);
-      alert("Failed to delete user. Check backend route.");
+      alert("Failed to delete user");
     }
   };
 
-  // Filter by role first
+  // ---------------- Filter, Search, Sort ----------------
   let filteredUsers =
     filterRole === "all" ? users : users.filter((u) => u.role === filterRole);
 
-  // Apply name search (firstName + lastName)
   if (searchName.trim() !== "") {
     filteredUsers = filteredUsers.filter((u) =>
       `${u.firstName} ${u.lastName}`
@@ -70,26 +72,43 @@ export default function AdminUsersPage() {
     );
   }
 
+  filteredUsers.sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+
+  // ---------------- Pagination ----------------
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white text-black">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="p-8 flex-1">
-          <h1 className="text-2xl font-bold mb-6">Admin Panel – Users</h1>
+        <main className="p-8 flex-1 bg-white text-black">
+          <h1 className="text-2xl font-bold mb-6 text-black">Users</h1>
 
-          {loading && <p>Loading users...</p>}
+          {loading && <p className="text-black">Loading users...</p>}
           {error && <p className="text-red-500">{error}</p>}
 
           {!loading && !error && users.length > 0 && (
             <>
-              {/* Filters */}
+              {/* Filters, Search, Sort */}
               <div className="flex flex-wrap gap-4 mb-4">
-                {/* Role Filter */}
                 <div>
-                  <label className="mr-2 font-semibold">Filter by Role:</label>
+                  <label className="mr-2 font-semibold text-black">Filter by Role:</label>
                   <select
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 py-1 rounded text-black"
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
                   >
@@ -100,23 +119,34 @@ export default function AdminUsersPage() {
                   </select>
                 </div>
 
-                {/* Name Search */}
                 <div>
-                  <label className="mr-2 font-semibold">Search by Name:</label>
+                  <label className="mr-2 font-semibold text-black">Search by Name:</label>
                   <input
                     type="text"
                     placeholder="Enter name..."
-                    className="border px-2 py-1 rounded"
+                    className="border px-2 py-1 rounded text-black"
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)}
                   />
                 </div>
+
+                <div>
+                  <label className="mr-2 font-semibold text-black">Sort by Name:</label>
+                  <button
+                    onClick={() =>
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    }
+                    className="border px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-black"
+                  >
+                    {sortOrder === "asc" ? "Ascending ↑" : "Descending ↓"}
+                  </button>
+                </div>
               </div>
 
               {/* Users Table */}
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-800 text-white">
+              <div className="bg-gray-50 rounded-lg shadow overflow-hidden">
+                <table className="w-full text-black">
+                  <thead className="bg-gray-200 text-black">
                     <tr>
                       <th className="px-4 py-3 text-left">Name</th>
                       <th className="px-4 py-3 text-left">Email</th>
@@ -125,8 +155,8 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map((user) => (
+                    {paginatedUsers.length > 0 ? (
+                      paginatedUsers.map((user) => (
                         <tr key={user._id} className="border-b border-gray-200">
                           <td className="px-4 py-3">{`${user.firstName} ${user.lastName}`}</td>
                           <td className="px-4 py-3">{user.email}</td>
@@ -151,10 +181,43 @@ export default function AdminUsersPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-4 gap-2">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50 text-black"
+                  >
+                    Prev
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => goToPage(page)}
+                      className={`px-3 py-1 border rounded hover:bg-gray-200 text-black ${
+                        page === currentPage ? "bg-gray-300 font-bold" : ""
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border rounded hover:bg-gray-200 disabled:opacity-50 text-black"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </>
           )}
 
-          {!loading && !error && users.length === 0 && <p>No users found.</p>}
+          {!loading && !error && users.length === 0 && <p className="text-black">No users found.</p>}
         </main>
       </div>
     </div>
