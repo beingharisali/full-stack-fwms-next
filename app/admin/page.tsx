@@ -19,7 +19,7 @@ export default function AdminPage() {
   const [vehicleChartData, setVehicleChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 Auth + initial data fetch
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -39,7 +39,7 @@ export default function AdminPage() {
     fetchDashboardData();
   }, [router]);
 
-  // 📡 Fetch dashboard data
+  
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -57,7 +57,7 @@ export default function AdminPage() {
     }
   };
 
-  // 📊 Prepare vehicle chart data
+ 
   useEffect(() => {
     if (vehicles.length > 0) {
       const available = vehicles.filter(
@@ -89,7 +89,7 @@ export default function AdminPage() {
     return <div className="p-10">Loading...</div>;
   }
 
-  // 📈 Cards calculations
+  
   const driversPercentage =
     drivers.length > 0 ? Math.min(drivers.length * 10, 100) : 0;
 
@@ -104,17 +104,17 @@ export default function AdminPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
-      {/* Navbar */}
+      
       <Navbar />
 
-      {/* Main layout */}
+      
       <div className="flex flex-1">
         <Sidebar />
 
         <main className="p-8 flex-1">
-          {/* Dashboard cards */}
+         
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Card 1 */}
+           
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-800">
                 Total Drivers
@@ -127,7 +127,7 @@ export default function AdminPage() {
               </p>
             </div>
 
-            {/* Card 2 */}
+           
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-800">
                 Total Vehicles
@@ -140,7 +140,7 @@ export default function AdminPage() {
               </p>
             </div>
 
-            {/* Card 3 */}
+           
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-800">
                 Available Vehicles
@@ -151,7 +151,6 @@ export default function AdminPage() {
               <p className="text-gray-600">Ready for use</p>
             </div>
 
-            {/* Card 4 */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-800">
                 System Usage
@@ -163,7 +162,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* 🚗 Vehicles Chart */}
           <div className="mt-10 bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">
               Vehicles Overview
