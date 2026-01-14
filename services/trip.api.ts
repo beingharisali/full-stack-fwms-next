@@ -1,48 +1,88 @@
 import http from "./http";
 import { Trip } from "@/types/trip";
 
-// Create a new trip
+/**
+ * Create a new trip
+ */
 export const createTrip = async (data: Trip): Promise<Trip> => {
   const res = await http.post("/trips", data);
-  return res.data.data ?? res.data; // return data.data if exists
+  return res.data?.data || res.data;
 };
 
-// Get all trips
+/**
+ * Get all trips (Admin / Dashboard / Trips Page)
+ */
 export const getTrips = async (): Promise<Trip[]> => {
-  const res = await http.get("/trips");
-  return Array.isArray(res.data.data) ? res.data.data : [];
+  try {
+    const res = await http.get("/trips");
+
+    // backend agar { data: [] } bheje
+    if (Array.isArray(res.data?.data)) {
+      return res.data.data;
+    }
+
+    // backend agar direct [] bheje
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Error fetching trips:", error);
+    return [];
+  }
 };
 
-// Get trip by ID
+/**
+ * Get trip by ID
+ */
 export const getTripById = async (id: string): Promise<Trip> => {
   const res = await http.get(`/trips/${id}`);
-  return res.data.data ?? res.data;
+  return res.data?.data || res.data;
 };
 
-// Update a trip
-export const updateTrip = async (id: string, trip: Trip): Promise<Trip> => {
+/**
+ * Update a trip
+ */
+export const updateTrip = async (
+  id: string,
+  trip: Partial<Trip>
+): Promise<Trip> => {
   const res = await http.put(`/trips/${id}`, trip);
-  return res.data.data ?? res.data;
+  return res.data?.data || res.data;
 };
 
-// Delete a trip
+/**
+ * Delete a trip
+ */
 export const deleteTrip = async (id: string): Promise<void> => {
   await http.delete(`/trips/${id}`);
 };
 
-// Assigned trips (for driver)
+/**
+ * Get assigned trips (Driver Dashboard)
+ */
 export const getAssignedTrips = async (): Promise<Trip[]> => {
   try {
     const token = localStorage.getItem("token");
+
     const res = await http.get("/trips/assigned", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    return Array.isArray(res.data.data) ? res.data.data : [];
-  } catch (err) {
-    console.error(err);
+    if (Array.isArray(res.data?.data)) {
+      return res.data.data;
+    }
+
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Error fetching assigned trips:", error);
     return [];
   }
 };
