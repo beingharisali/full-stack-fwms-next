@@ -1,157 +1,111 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
+import { getTrips, deleteTrip } from "@/services/trip.api";
+import { Trip } from "@/types/trip";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
-import VehicleChart from "../component/charts/vehicleChart";
-import DriversChart from "../component/charts/driversChart";
+import { useEffect, useState } from "react";
 
-import { getDrivers } from "../../services/driver.api";
-import { getVehicles } from "../../services/vehicle.api";
+export default function TripsPage() {
+	const router = useRouter();
+	const [trips, setTrips] = useState<Trip[]>([]);
+	console.log()
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-export default function AdminPage() {
-  const router = useRouter();
+	useEffect(() => {
+		fetchTrips();
+	}, []);
 
-  const [user, setUser] = useState<any>(null);
-  const [drivers, setDrivers] = useState<any[]>([]);
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [vehicleChartData, setVehicleChartData] = useState<any[]>([]);
-  const [driversChartData, setDriversChartData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+	const fetchTrips = async () => {
+		try {
+			setLoading(true);
+			const data = await getTrips();
+			setTrips(data);
+		} catch (err) {
+			setError("Failed to fetch trips");
+			console.error(err);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  /* ================= AUTH ================= */
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/");
-      return;
-    }
+	const handleDelete = async (id: string) => {
+		if (!confirm("Are you sure you want to delete this trip?")) return;
 
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setUser(payload);
-    } catch {
-      localStorage.removeItem("token");
-      router.push("/");
-      return;
-    }
+		try {
+			await deleteTrip(id);
+			setTrips((prev) => prev.filter((t) => t._id !== id));
+		} catch (err) {
+			alert("Failed to delete trip");
+			console.error(err);
+		}
+	};
 
-    fetchDashboardData();
-  }, [router]);
+	if (loading) return <div className="flex min-h-screen bg-gray-100"><Sidebar/><div className="flex-1"><Navbar/><p className="p-10 text-gray-800">Loading...</p></div></div>;
+	if (error) return <div className="flex min-h-screen bg-gray-100"><Sidebar/><div className="flex-1"><Navbar/><p className="p-10 text-red-500">{error}</p></div></div>;
 
-  /* ================= FETCH DATA ================= */
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [driversRes, vehiclesRes] = await Promise.all([
-        getDrivers(),
-        getVehicles(),
-      ]);
+	return (
+		<div className="flex min-h-screen bg-gray-100">
+			<Sidebar/>
+			<div className="flex-1 flex flex-col">
+				<Navbar/>
+				<main className="p-8 flex-1">
+					<div className="flex justify-between items-center mb-6">
+						<h1 className="text-2xl font-bold text-gray-800">Trips</h1>
+						<button
+							onClick={() => router.push("/trip/create")}
+							className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors">
+							Create Trip
+						</button>
+					</div>
 
-      setDrivers(driversRes.drivers || []);
-      setVehicles(vehiclesRes || []);
-    } catch (error) {
-      console.error("Dashboard error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ================= VEHICLES CHART ================= */
-  useEffect(() => {
-    if (vehicles.length > 0) {
-      const available = vehicles.filter(
-        v => v.status?.toLowerCase() === "available"
-      ).length;
-
-      const unavailable = vehicles.filter(
-        v => v.status?.toLowerCase() === "unavailable"
-      ).length;
-
-      const maintenance = vehicles.filter(
-        v => v.status?.toLowerCase() === "maintenance"
-      ).length;
-
-      setVehicleChartData([
-        { name: "Available", value: available },
-        { name: "Unavailable", value: unavailable },
-        { name: "Maintenance", value: maintenance },
-      ]);
-    }
-  }, [vehicles]);
-
-  /* ================= DRIVERS CHART (FINAL FIX) ================= */
-  useEffect(() => {
-    if (drivers.length > 0) {
-      const availableDrivers = drivers.filter(
-        d => d.available === true
-      ).length;
-
-      const unavailableDrivers = drivers.filter(
-        d => d.available === false
-      ).length;
-
-      setDriversChartData([
-        { name: "Available", value: availableDrivers },
-        { name: "Unavailable", value: unavailableDrivers },
-      ]);
-    }
-  }, [drivers]);
-
-  if (!user || loading) {
-    return <div className="p-10">Loading...</div>;
-  }
-
-  const availableVehicles = vehicles.filter(
-    v => v.status?.toLowerCase() === "available"
-  ).length;
-
-  return (
-    <div className="flex min-h-screen bg-gray-100 flex-col">
-      <Navbar />
-
-      <div className="flex flex-1">
-        <Sidebar />
-
-        <main className="p-8 flex-1">
-          {/* STATS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold">Total Drivers</h3>
-              <p className="text-2xl font-bold">{drivers.length}</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold">Total Vehicles</h3>
-              <p className="text-2xl font-bold">{vehicles.length}</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold">Available Vehicles</h3>
-              <p className="text-2xl font-bold">{availableVehicles}</p>
-            </div>
-          </div>
-
-          {/* CHARTS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                Vehicles Overview
-              </h3>
-              <VehicleChart data={vehicleChartData} />
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                Drivers Overview
-              </h3>
-              <DriversChart data={driversChartData} />
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+					{trips.length === 0 ? (
+						<p className="text-gray-800 font-bold">No trips saved yet ❌</p>
+					) : (
+						<div className="bg-white rounded-lg shadow overflow-hidden">
+							<table className="w-full">
+								<thead className="bg-gray-800 text-white">
+									<tr>
+										<th className="px-4 py-3 text-left">Departure</th>
+										<th className="px-4 py-3 text-left">Date</th>
+										<th className="px-4 py-3 text-left">Destination</th>
+										<th className="px-4 py-3 text-left">Departure Time</th>
+										<th className="px-4 py-3 text-left">Arrival Time</th>
+										<th className="px-4 py-3 text-left">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{trips.map((trip) => (
+										<tr key={trip._id} className="border-b border-gray-200">
+											<td className="px-4 py-3 text-gray-800">{trip.departure}</td>
+											<td className="px-4 py-3 text-gray-800">{new Date(trip.date).toLocaleDateString()}</td>
+											<td className="px-4 py-3 text-gray-800">{trip.destination}</td>
+											<td className="px-4 py-3 text-gray-800">{trip.departureTime || "-"}</td>
+											<td className="px-4 py-3 text-gray-800">{trip.arrivalTime || "-"}</td>
+											<td className="px-4 py-3">
+												<div className="flex gap-2">
+													<button
+														onClick={() => router.push(`/trip/update/${trip._id}`)}
+														className="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+														Edit
+													</button>
+													<button
+														onClick={() => handleDelete(trip._id!)}
+														className="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+														Delete
+													</button>
+												</div>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+				</main>
+			</div>
+		</div>
+	);
 }
