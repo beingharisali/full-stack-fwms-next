@@ -6,6 +6,8 @@ import Sidebar from "../component/sidebar";
 import { Vehicle } from "../../types/vehicle";
 import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "../../services/vehicle.api";
 
+const ITEMS_PER_PAGE = 5;
+
 function VehiclePage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,10 @@ function VehiclePage() {
     type: "Car" as "Car" | "Bike" | "Truck" | "Van",
     status: "Available" as "Available" | "In-Use" | "Maintenance" | "Inactive",
   });
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"" | "Car" | "Bike" | "Truck" | "Van">("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchVehicles();
@@ -99,9 +105,28 @@ function VehiclePage() {
     }
   };
 
+  // Filter vehicles by search term and type
+  const filteredVehicles = vehicles.filter((v) => {
+    const matchesSearch = v.number.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter ? v.type === typeFilter : true;
+    return matchesSearch && matchesType;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
+  const paginatedVehicles = filteredVehicles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   if (loading)
     return (
-      <div className="flex min-h-screen bg-gray-100 flex-col">
+      <div className="flex min-h-screen bg-white flex-col text-black">
         <Navbar />
         <div className="flex flex-1">
           <Sidebar />
@@ -111,13 +136,13 @@ function VehiclePage() {
     );
 
   return (
-    <div className="flex min-h-screen bg-gray-100 flex-col">
+    <div className="flex min-h-screen bg-white flex-col text-black">
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
         <div className="flex-1 p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Vehicle Management</h1>
+            <h1 className="text-3xl font-bold">Vehicle Management</h1>
             <button
               onClick={() => setShowForm(!showForm)}
               className="bg-black text-white border border-black px-4 py-2 rounded hover:bg-gray-800 transition-colors"
@@ -137,7 +162,7 @@ function VehiclePage() {
               <h2 className="text-xl font-semibold mb-4">{editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Number</label>
+                  <label className="block text-sm font-medium mb-1">Vehicle Number</label>
                   <input
                     type="text"
                     value={formData.number}
@@ -149,7 +174,7 @@ function VehiclePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
+                  <label className="block text-sm font-medium mb-1">Vehicle Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) =>
@@ -165,7 +190,7 @@ function VehiclePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) =>
@@ -202,9 +227,38 @@ function VehiclePage() {
             </div>
           )}
 
+          {/* Search and Filter */}
+          <div className="flex space-x-4 mb-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search by vehicle number..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <select
+              value={typeFilter}
+              onChange={(e) => {
+                setTypeFilter(e.target.value as "" | "Car" | "Bike" | "Truck" | "Van");
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Types</option>
+              <option value="Car">Car</option>
+              <option value="Bike">Bike</option>
+              <option value="Truck">Truck</option>
+              <option value="Van">Van</option>
+            </select>
+          </div>
+
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full border border-black">
-              <thead className="bg-black text-white border border-black">
+              <thead className="bg-gray-200 text-black border border-black">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
                     Vehicle Number
@@ -221,14 +275,10 @@ function VehiclePage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-black">
-                {vehicles.map((vehicle) => (
+                {paginatedVehicles.map((vehicle) => (
                   <tr key={vehicle._id} className="border border-black">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border border-black">
-                      {vehicle.number}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-black">
-                      {vehicle.type}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium border border-black">{vehicle.number}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm border border-black">{vehicle.type}</td>
                     <td className="px-6 py-4 whitespace-nowrap border border-black">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
@@ -257,8 +307,37 @@ function VehiclePage() {
               </tbody>
             </table>
 
-            {vehicles.length === 0 && (
+            {filteredVehicles.length === 0 && (
               <div className="text-center py-8 text-gray-500">No vehicles found. Add your first vehicle above.</div>
+            )}
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-2 py-4">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 border rounded ${currentPage === page ? "bg-black text-white" : ""}`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             )}
           </div>
         </div>
