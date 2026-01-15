@@ -1,14 +1,11 @@
 import Authprovider from "../authprovider";
 
-
 export default function ManagerLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <Authprovider allowedRoles={["manager"]}>
-      {children}
-    </Authprovider>
-  );
+	return (
+		<Authprovider allowedRoles={["manager", "admin"]}>{children}</Authprovider>
+	);
 }

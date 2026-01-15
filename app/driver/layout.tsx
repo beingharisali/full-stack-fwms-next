@@ -1,14 +1,9 @@
 import Authprovider from "../authprovider";
 
-
 export default function DriverLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  return (
-    <Authprovider allowedRoles={["driver"]}>
-      {children}
-    </Authprovider>
-  );
+	return <Authprovider allowedRoles={["admin"]}>{children}</Authprovider>;
 }
