@@ -84,7 +84,6 @@ const fetchDrivers = async () => {
   };
 
   /* ================= TRIPS ================= */
-
   const sortedTrips =
     tripSort === "time"
       ? [...trips].sort((a, b) =>
