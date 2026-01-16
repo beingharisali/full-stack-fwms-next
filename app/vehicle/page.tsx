@@ -297,7 +297,8 @@ function VehiclePage() {
                       </button>
                       <button
                         onClick={() => handleDelete(vehicle._id!)}
-                        className="bg-red-600 text-white border border-black px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                        className="bg-gray-600 text-white border border-black px-3 py-1 rounded hover:bg-black
+                        -700 transition-colors"
                       >
                         Delete
                       </button>
