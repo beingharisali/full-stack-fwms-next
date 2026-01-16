@@ -20,6 +20,7 @@ export default function TripsPage() {
   /* ===== FILTERS ===== */
   const [tripSort, setTripSort] =
     useState<"none" | "time" | "name">("none");
+  const [search, setSearch] = useState("");
 
   /* ===== PAGINATION ===== */
   const [tripPage, setTripPage] = useState(1);
@@ -53,17 +54,23 @@ export default function TripsPage() {
     }
   };
 
-  /* ===== SORT LOGIC ===== */
+  /* ===== SEARCH + SORT LOGIC ===== */
+  const filteredTrips = trips.filter((trip) =>
+    `${trip.departure} ${trip.destination}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
   const sortedTrips =
     tripSort === "time"
-      ? [...trips].sort((a, b) =>
+      ? [...filteredTrips].sort((a, b) =>
           (a.departureTime || "").localeCompare(b.departureTime || "")
         )
       : tripSort === "name"
-      ? [...trips].sort((a, b) =>
+      ? [...filteredTrips].sort((a, b) =>
           a.destination.localeCompare(b.destination)
         )
-      : trips;
+      : filteredTrips;
 
   /* ===== PAGINATION LOGIC ===== */
   const totalPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE);
@@ -115,7 +122,28 @@ export default function TripsPage() {
             </button>
           </div>
 
-          {/* ===== FILTER ===== */}
+          {/* ===== SEARCH BAR ===== */}
+          <div className="mb-4 flex gap-2">
+            <input
+              type="text"
+              placeholder="Search by departure or destination..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setTripPage(1);
+              }}
+              className="flex-1 rounded border border-gray-300 bg-white px-4 py-2 text-sm text-black"
+            />
+
+            <button
+              onClick={() => setTripPage(1)}
+              className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* ===== SORT FILTER ===== */}
           <div className="mb-4">
             <select
               value={tripSort}
@@ -131,11 +159,11 @@ export default function TripsPage() {
             </select>
           </div>
 
-          {/* ===== EMPTY STATE (VEHICLE THEME) ===== */}
+          {/* ===== TABLE ===== */}
           {paginatedTrips.length === 0 ? (
             <div className="bg-white rounded-lg shadow mt-6">
               <div className="text-center py-10 text-gray-500">
-                No trips found. Create your first trip above.
+                No trips found.
               </div>
             </div>
           ) : (
@@ -158,39 +186,18 @@ export default function TripsPage() {
                       <td className="px-4 py-3 text-black">
                         {trip.departure}
                       </td>
-
                       <td className="px-4 py-3 text-black">
                         {new Date(trip.date).toLocaleDateString()}
                       </td>
-
                       <td className="px-4 py-3 text-black">
                         {trip.destination}
                       </td>
-
                       <td className="px-4 py-3 text-black">
-                        {trip.departureTime
-                          ? new Date(
-                              `1970-01-01T${trip.departureTime}`
-                            ).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })
-                          : "-"}
+                        {trip.departureTime || "-"}
                       </td>
-
                       <td className="px-4 py-3 text-black">
-                        {trip.arrivalTime
-                          ? new Date(
-                              `1970-01-01T${trip.arrivalTime}`
-                            ).toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })
-                          : "-"}
+                        {trip.arrivalTime || "-"}
                       </td>
-
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button
@@ -201,7 +208,6 @@ export default function TripsPage() {
                           >
                             Edit
                           </button>
-
                           <button
                             onClick={() => handleDelete(trip._id!)}
                             className="bg-gray-600 text-white px-3 py-1 rounded text-sm"
