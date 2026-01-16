@@ -29,7 +29,7 @@ export default function AdminPage() {
 
   const [loading, setLoading] = useState(true);
 
-  /* ================= AUTH CHECK ================= */
+  /* ================= AUTH ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -47,22 +47,22 @@ export default function AdminPage() {
     }
 
     fetchDashboardData();
-  }, [router]);
+  }, []);
 
-  /* ================= FETCH DASHBOARD DATA ================= */
+  /* ================= FETCH DATA ================= */
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
 
-      const [driversData, vehiclesData, tripsData] = await Promise.all([
+      const [driversRes, vehiclesRes, tripsRes] = await Promise.all([
         getDrivers(),
         getVehicles(),
         getTrips(),
       ]);
 
-      setDrivers(driversData?.drivers || driversData || []);
-      setVehicles(vehiclesData || []);
-      setTrips(tripsData || []);
+      setDrivers(driversRes?.drivers || driversRes || []);
+      setVehicles(vehiclesRes || []);
+      setTrips(tripsRes || []);
     } catch (error) {
       console.error("Dashboard error:", error);
     } finally {
@@ -80,15 +80,21 @@ export default function AdminPage() {
     setVehicleChartData([
       {
         name: "Available",
-        value: vehicles.filter(v => v.status?.toLowerCase() === "available").length,
+        value: vehicles.filter(
+          (v) => v.status?.toLowerCase() === "available"
+        ).length,
       },
       {
         name: "Unavailable",
-        value: vehicles.filter(v => v.status?.toLowerCase() === "unavailable").length,
+        value: vehicles.filter(
+          (v) => v.status?.toLowerCase() === "unavailable"
+        ).length,
       },
       {
         name: "Maintenance",
-        value: vehicles.filter(v => v.status?.toLowerCase() === "maintenance").length,
+        value: vehicles.filter(
+          (v) => v.status?.toLowerCase() === "maintenance"
+        ).length,
       },
     ]);
   }, [vehicles]);
@@ -103,48 +109,54 @@ export default function AdminPage() {
     setDriversChartData([
       {
         name: "Active",
-        value: drivers.filter(d => d.available === true).length,
+        value: drivers.filter((d) => d.available === true).length,
       },
       {
         name: "Inactive",
-        value: drivers.filter(d => d.available === false && !d.assignedVehicle).length,
+        value: drivers.filter(
+          (d) => d.available === false && !d.assignedVehicle
+        ).length,
       },
       {
         name: "On Trip",
-        value: drivers.filter(d => d.assignedVehicle && d.available === false).length,
+        value: drivers.filter(
+          (d) => d.assignedVehicle && d.available === false
+        ).length,
       },
     ]);
   }, [drivers]);
 
-  /* ================= TRIPS CHART (FINAL FIX) ================= */
+  /* ================= TRIPS CHART (DATE BASED FIX) ================= */
   useEffect(() => {
     if (!trips || trips.length === 0) {
       setTripsChartData([]);
       return;
     }
 
-    const normalize = (s?: string) =>
-      s?.toLowerCase().replace(/\s+/g, "_");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const assigned = trips.filter(t => normalize(t.status) === "assigned").length;
-    const inProgress = trips.filter(
-      t =>
-        normalize(t.status) === "in_progress" ||
-        normalize(t.status) === "ongoing"
-    ).length;
-    const completed = trips.filter(t => normalize(t.status) === "completed").length;
+    let upcoming = 0;
+    let todayTrips = 0;
+    let past = 0;
 
-    const total = assigned + inProgress + completed;
+    trips.forEach((trip) => {
+      const tripDate = new Date(trip.date);
+      tripDate.setHours(0, 0, 0, 0);
 
-    if (total === 0) {
-      setTripsChartData([]);
-      return;
-    }
+      if (tripDate.getTime() === today.getTime()) {
+        todayTrips++;
+      } else if (tripDate > today) {
+        upcoming++;
+      } else {
+        past++;
+      }
+    });
 
     setTripsChartData([
-      { name: "Assigned", value: assigned || 0.0001 },
-      { name: "In Progress", value: inProgress || 0.0001 },
-      { name: "Completed", value: completed || 0.0001 },
+      { name: "Upcoming Trips", value: upcoming },
+      { name: "Today Trips", value: todayTrips },
+      { name: "Past Trips", value: past },
     ]);
   }, [trips]);
 
@@ -153,7 +165,7 @@ export default function AdminPage() {
   }
 
   const availableVehicles = vehicles.filter(
-    v => v.status?.toLowerCase() === "available"
+    (v) => v.status?.toLowerCase() === "available"
   ).length;
 
   return (
@@ -190,17 +202,23 @@ export default function AdminPage() {
           {/* ===== CHARTS ===== */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Vehicles Overview</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Vehicles Overview
+              </h3>
               <VehicleChart data={vehicleChartData} />
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Drivers Overview</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Drivers Overview
+              </h3>
               <DriversChart data={driversChartData} />
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Trips Overview</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Trips Overview
+              </h3>
 
               {tripsChartData.length > 0 ? (
                 <TripsChart data={tripsChartData} />

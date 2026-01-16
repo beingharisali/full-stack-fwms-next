@@ -9,34 +9,44 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = ["#10B981", "#EF4444"];
+const COLORS = ["#10B981", "#EF4444", "#3B82F6"];
 
 export default function DriversChart({
   data,
 }: {
   data: { name: string; value: number }[];
 }) {
+  // 🚨 zero values remove
+  const filteredData = data.filter(d => d.value > 0);
+
+  if (filteredData.length === 0) {
+    return (
+      <div className="h-[250px] flex items-center justify-center text-gray-500">
+        No driver data
+      </div>
+    );
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={data}
-          dataKey="value"
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          label
-        >
-          {data.map((_, index) => (
-            <Cell
-              key={index}
-              fill={COLORS[index % COLORS.length]}
-            />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className="w-full h-[250px]">
+      <ResponsiveContainer>
+        <PieChart>
+          <Pie
+            data={filteredData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={50}
+            outerRadius={90}
+          >
+            {filteredData.map((_, index) => (
+              <Cell key={index} fill={COLORS[index]} />
+            ))}
+          </Pie>
+
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

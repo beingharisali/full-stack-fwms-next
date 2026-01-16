@@ -6,33 +6,34 @@ import {
   Cell,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 
-type ChartData = {
-  name: string;
-  value: number;
-};
+const COLORS = ["#22C55E", "#F97316", "#EF4444"];
 
-const COLORS = ["#4CAF50", "#F44336", "#FF9800"];
+export default function VehicleChart({ data }: any) {
+  const filteredData = data.filter((d: any) => d.value > 0);
 
-export default function VehicleChart({ data }: { data: ChartData[] }) {
   return (
-    <PieChart width={320} height={320}>
-      <Pie
-        data={data}
-        dataKey="value"
-        nameKey="name"
-        cx="50%"
-        cy="50%"
-        outerRadius={100}
-        label
-      >
-        {data.map((_, index) => (
-          <Cell key={index} fill={COLORS[index % COLORS.length]} />
-        ))}
-      </Pie>
-      <Tooltip />
-      <Legend />
-    </PieChart>
+    <div className="w-full h-[250px]">
+      <ResponsiveContainer>
+        <PieChart>
+          <Pie
+            data={filteredData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={50}
+            outerRadius={90}
+          >
+            {filteredData.map((_: any, index: number) => (
+              <Cell key={index} fill={COLORS[index]} />
+            ))}
+          </Pie>
+
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
