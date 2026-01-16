@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleDelete(u._id)}
-                        className="bg-red-600 text-white px-3 py-1 rounded"
+                        className="bg-gray-600 text-white px-3 py-1 rounded"
                       >
                         Delete
                       </button>
