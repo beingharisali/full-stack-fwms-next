@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import DriverNavbar from "../driver/component/navbar";
-import { getAssignedTrips } from "../../../services/trip.api";
+import { getTrips } from "../../../services/trip.api";
 
 interface Trip {
 	id: number;
@@ -16,7 +16,6 @@ interface Trip {
 
 export default function DriverPage() {
 	const router = useRouter();
-	const [user, setUser] = useState<any>(null);
 	const [trips, setTrips] = useState<Trip[]>([]);
 	const [loadingTrips, setLoadingTrips] = useState(false);
 	const [view, setView] = useState<"none" | "trips">("none"); // Default: hidden
@@ -44,7 +43,7 @@ export default function DriverPage() {
 	const fetchTrips = async () => {
 		try {
 			setLoadingTrips(true);
-			const data = await getAssignedTrips(); // Admin-created trips
+			const data = await getTrips(); // Admin-created trips
 			setTrips(data);
 			console.log(data);
 		} catch (err) {
@@ -97,7 +96,6 @@ export default function DriverPage() {
 					</div>
 				</div>
 
-				{/* Trips table (read-only) */}
 				{view === "trips" && (
 					<div className="bg-white rounded-lg shadow-md overflow-x-auto">
 						<h2 className="text-xl font-bold p-6 border-b border-gray-200 text-gray-900">
@@ -129,7 +127,7 @@ export default function DriverPage() {
 								) : (
 									trips.map((trip) => (
 										<tr
-											key={trip.id}
+											key={trip._id}
 											className="border-t border-gray-200 hover:bg-gray-50">
 											<td className="p-3 font-medium text-gray-800">
 												#{trip.id}
@@ -146,8 +144,8 @@ export default function DriverPage() {
 													{trip.status}
 												</span>
 											</td>
-											<td className="p-3 text-gray-800">{trip.pickup}</td>
-											<td className="p-3 text-gray-800">{trip.drop}</td>
+											<td className="p-3 text-gray-800">{trip.departure}</td>
+											<td className="p-3 text-gray-800">{trip.destination}</td>
 											<td className="p-3 text-gray-500">
 												{new Date(trip.createdAt).toLocaleString()}
 											</td>
