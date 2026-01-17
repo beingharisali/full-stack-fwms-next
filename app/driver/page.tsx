@@ -123,7 +123,7 @@ export default function DriversPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-black px-3 py-2 rounded text-black w-64"
+              className="border border-black px-3 py-2 rounded text-black w-250"
             />
 
             <select
