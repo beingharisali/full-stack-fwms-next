@@ -5,6 +5,7 @@ import Navbar from "../component/navbar";
 import Sidebar from "../component/sidebar";
 import { Vehicle } from "../../types/vehicle";
 import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "../../services/vehicle.api";
+import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -124,16 +125,7 @@ function VehiclePage() {
     setCurrentPage(page);
   };
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen bg-white flex-col text-black">
-        <Navbar />
-        <div className="flex flex-1">
-          <Sidebar />
-          <div className="flex-1 p-8 text-center">Loading...</div>
-        </div>
-      </div>
-    );
+  if (loading) return <LoadingBar title="Loading Vehicles" duration={2} />;
 
   return (
     <div className="flex min-h-screen bg-white flex-col text-black">

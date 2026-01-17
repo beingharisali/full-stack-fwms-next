@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
+import LoadingBar from "../component/LoadingBar";
 import { getDrivers, deleteDriver } from "../../services/driver.api";
 import { Driver } from "@/types/driver";
 
@@ -79,15 +80,7 @@ export default function DriversPage() {
   );
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1">
-          <Navbar />
-          <p className="p-10 text-black">Loading drivers...</p>
-        </div>
-      </div>
-    );
+    return <LoadingBar title="Loading Drivers" duration={2} />;
   }
 
   if (error) {

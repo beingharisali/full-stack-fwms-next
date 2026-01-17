@@ -6,6 +6,7 @@ import { getTrips, deleteTrip } from "@/services/trip.api";
 import { Trip } from "@/types/trip";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
+import LoadingBar from "../component/LoadingBar";
 
 /* ===== CONSTANT ===== */
 const ITEMS_PER_PAGE = 5;
@@ -80,16 +81,7 @@ export default function TripsPage() {
     tripPage * ITEMS_PER_PAGE
   );
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1">
-          <Navbar />
-          <p className="p-10 text-black">Loading...</p>
-        </div>
-      </div>
-    );
+  if (loading) return <LoadingBar title="Loading Trips" duration={2} />;
 
   if (error)
     return (
