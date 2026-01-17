@@ -6,6 +6,7 @@ import Navbar from "../manager/component/navbar";
 import { getTrips } from "@/services/trip.api";
 import { getDrivers } from "@/services/driver.api";
 import { Trip } from "@/types/trip";
+import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -130,11 +131,7 @@ const fetchDrivers = async () => {
   /* ================= UI ================= */
 
   if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-black">
-        Loading...
-      </div>
-    );
+    return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
 
   return (
