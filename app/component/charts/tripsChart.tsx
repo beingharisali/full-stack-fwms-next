@@ -5,44 +5,48 @@ import {
   Pie,
   Cell,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 
-interface TripsChartProps {
-  data: {
-    name: string;
-    value: number;
-  }[];
-}
+const COLORS = ["#10B981", "#EF4444", "#3B82F6"];
 
-const COLORS = [
-  "#f97316", // orange → Assigned
-  "#3b82f6", // blue → In Progress
-  "#22c55e", // green → Completed
-];
+export default function TripsChart({
+  data,
+}: {
+  data: { name: string; value: number }[];
+}) {
+ 
+  const filteredData = data.filter(d => d.value > 0);
 
-export default function TripsChart({ data }: TripsChartProps) {
+  if (filteredData.length === 0) {
+    return (
+      <div className="h-[250px] flex items-center justify-center text-gray-500">
+        No trips data
+      </div>
+    );
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <PieChart>
-        <Pie
-          data={data}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={90}
-          label
-        >
-          {data.map((_, index) => (
-            <Cell
-              key={index}
-              fill={COLORS[index % COLORS.length]}
-            />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className="w-full h-[250px]">
+      <ResponsiveContainer>
+        <PieChart>
+          <Pie
+            data={filteredData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={50}
+            outerRadius={90}
+          >
+            {filteredData.map((_, index) => (
+              <Cell key={index} fill={COLORS[index]} />
+            ))}
+          </Pie>
+
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
