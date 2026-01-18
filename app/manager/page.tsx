@@ -6,6 +6,7 @@ import Navbar from "../manager/component/navbar";
 import { getTrips } from "@/services/trip.api";
 import { getDrivers } from "@/services/driver.api";
 import { Trip } from "@/types/trip";
+import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -18,18 +19,17 @@ export default function ManagerPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
-  // SORT & FILTER
   const [tripSort, setTripSort] = useState<"none" | "time" | "name">("none");
   const [driverSort, setDriverSort] = useState<"none" | "name">("none");
   const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
 
-  // PAGINATION
   const [tripPage, setTripPage] = useState(1);
   const [driverPage, setDriverPage] = useState(1);
 
-  /* ================= AUTH + FETCH ================= */
 
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -38,15 +38,30 @@ export default function ManagerPage() {
     }
 
     try {
-      setUser(JSON.parse(atob(token.split(".")[1])));
+      const decodedUser = JSON.parse(atob(token.split(".")[1]));
+      setUser(decodedUser);
     } catch {
       localStorage.removeItem("token");
       router.push("/");
       return;
     }
+const delay = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
 
-    fetchTrips();
-    fetchDrivers();
+
+    const init = async () => {
+  setPageLoading(true);
+
+  await Promise.all([
+    fetchTrips(),
+    fetchDrivers(),
+    delay(2000) 
+  ]);
+
+  setPageLoading(false);
+};
+
+    init();
   }, [router]);
 
   const fetchTrips = async () => {
@@ -83,7 +98,6 @@ const fetchDrivers = async () => {
     setDriverPage(1);
   };
 
-  /* ================= TRIPS ================= */
   const sortedTrips =
     tripSort === "time"
       ? [...trips].sort((a, b) =>
@@ -102,7 +116,6 @@ const fetchDrivers = async () => {
     tripPage * ITEMS_PER_PAGE
   );
 
-  /* ================= DRIVERS ================= */
 
   const safeDrivers = Array.isArray(drivers) ? drivers : [];
 
@@ -127,14 +140,11 @@ const fetchDrivers = async () => {
     driverPage * ITEMS_PER_PAGE
   );
 
-  /* ================= UI ================= */
 
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-black">
-        Loading...
-      </div>
-    );
+  
+  
+  if (pageLoading) {
+    return <LoadingBar title="Loading Manager Dashboard" duration={4} />;
   }
 
   return (
@@ -142,7 +152,6 @@ const fetchDrivers = async () => {
       <Navbar setView={handleView} currentView={view} />
 
       <main className="flex-1 p-8">
-        {/* STATS */}
         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="rounded-xl bg-white p-6 shadow">
             <h3 className="text-lg font-semibold">Total Trips</h3>
@@ -155,12 +164,10 @@ const fetchDrivers = async () => {
           </div>
         </div>
 
-        {/* ================= TRIPS ================= */}
         {view === "trips" && (
           <div className="rounded-xl bg-white shadow">
             <h2 className="border-b p-6 text-xl font-bold">Trips</h2>
 
-            {/* SORT */}
             <div className="p-4">
               <select
                 value={tripSort}
@@ -208,7 +215,6 @@ const fetchDrivers = async () => {
               </tbody>
             </table>
 
-            {/* PAGINATION */}
             <div className="flex justify-between p-4">
               <button
                 disabled={tripPage === 1}
@@ -233,12 +239,10 @@ const fetchDrivers = async () => {
           </div>
         )}
 
-        {/* ================= DRIVERS ================= */}
         {view === "drivers" && (
           <div className="rounded-xl bg-white shadow">
             <h2 className="border-b p-6 text-xl font-bold">Drivers</h2>
 
-            {/* FILTERS */}
             <div className="flex gap-4 p-4">
               <select
                 value={driverLicenseFilter}
@@ -287,7 +291,6 @@ const fetchDrivers = async () => {
               </tbody>
             </table>
 
-            {/* PAGINATION */}
             <div className="flex justify-between p-4">
               <button
                 disabled={driverPage === 1}

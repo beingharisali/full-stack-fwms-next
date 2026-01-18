@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
+import LoadingBar from "../component/LoadingBar";
 
 import VehicleChart from "../component/charts/vehicleChart";
 import DriversChart from "../component/charts/driversChart";
@@ -63,9 +64,16 @@ export default function AdminPage() {
       setDrivers(driversRes?.drivers || driversRes || []);
       setVehicles(vehiclesRes || []);
       setTrips(tripsRes || []);
+      setDrivers(driversData?.drivers || driversData || []);
+      setVehicles(vehiclesData || []);
+      setTrips(tripsData || []);
+
+      // Ensure loading lasts at least 4 seconds
+      setTimeout(() => {
+        setLoading(false);
+      }, 4000);
     } catch (error) {
       console.error("Dashboard error:", error);
-    } finally {
       setLoading(false);
     }
   };
@@ -161,7 +169,7 @@ export default function AdminPage() {
   }, [trips]);
 
   if (!user || loading) {
-    return <div className="p-10">Loading...</div>;
+    return <LoadingBar title="Loading Admin Dashboard" duration={4} />;
   }
 
   const availableVehicles = vehicles.filter(

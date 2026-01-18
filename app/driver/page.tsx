@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
+import LoadingBar from "../component/LoadingBar";
 import { getDrivers, deleteDriver } from "../../services/driver.api";
 import { Driver } from "@/types/driver";
 
@@ -16,7 +17,6 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Added states
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedLicenseType, setSelectedLicenseType] = useState("all");
@@ -51,12 +51,10 @@ export default function DriversPage() {
     }
   };
 
-  /* 🔹 Dynamic license types */
   const licenseTypes = Array.from(
     new Set(drivers.map((d) => d.licenseType))
   );
 
-  /* 🔹 Filter + Search */
   const filteredDrivers = drivers.filter((d) => {
     const matchesLicense =
       selectedLicenseType === "all"
@@ -70,7 +68,6 @@ export default function DriversPage() {
     return matchesLicense && matchesSearch;
   });
 
-  /* 🔹 Pagination */
   const totalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedDrivers = filteredDrivers.slice(
@@ -79,15 +76,7 @@ export default function DriversPage() {
   );
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1">
-          <Navbar />
-          <p className="p-10 text-black">Loading drivers...</p>
-        </div>
-      </div>
-    );
+    return <LoadingBar title="Loading Drivers" duration={2} />;
   }
 
   if (error) {
@@ -120,7 +109,6 @@ export default function DriversPage() {
             </button>
           </div>
 
-          {/* 🔹 Search + Filter */}
           <div className="flex gap-4 mb-4">
             <input
               type="text"
@@ -130,7 +118,7 @@ export default function DriversPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-black px-3 py-2 rounded text-black w-64"
+              className="border border-black px-3 py-2 rounded text-black w-250"
             />
 
             <select
@@ -197,9 +185,9 @@ export default function DriversPage() {
             </div>
           )}
 
-          {/* 🔹 Pagination */}
+          {/* 🔹 UPDATED PAGINATION */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-3 mt-6">
+            <div className="flex items-center justify-between mt-6 px-6">
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
