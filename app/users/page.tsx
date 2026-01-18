@@ -59,7 +59,9 @@ export default function AdminUsersPage() {
 
   if (searchName) {
     filteredUsers = filteredUsers.filter((u) =>
-      `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchName.toLowerCase())
+      `${u.firstName} ${u.lastName}`
+        .toLowerCase()
+        .includes(searchName.toLowerCase())
     );
   }
 
@@ -107,13 +109,19 @@ export default function AdminUsersPage() {
             <input
               placeholder="Search by name..."
               value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
+              onChange={(e) => {
+                setSearchName(e.target.value);
+                setCurrentPage(1);
+              }}
               className="flex-1 border px-3 py-2 rounded"
             />
 
             <select
               value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
+              onChange={(e) => {
+                setFilterRole(e.target.value);
+                setCurrentPage(1);
+              }}
               className="border px-3 py-2 rounded"
             >
               <option value="all">All Roles</option>
@@ -135,16 +143,26 @@ export default function AdminUsersPage() {
             <table className="w-full border border-black">
               <thead className="bg-gray-200 border border-black">
                 <tr>
-                  <th className="px-4 py-3 border border-black text-left">Name</th>
-                  <th className="px-4 py-3 border border-black text-left">Email</th>
-                  <th className="px-4 py-3 border border-black text-left">Role</th>
-                  <th className="px-4 py-3 border border-black text-left">Actions</th>
+                  <th className="px-4 py-3 border border-black text-left">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 border border-black text-left">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 border border-black text-left">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 border border-black text-left">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedUsers.map((u) => (
                   <tr key={u._id} className="border border-black">
-                    <td className="px-4 py-3">{u.firstName} {u.lastName}</td>
+                    <td className="px-4 py-3">
+                      {u.firstName} {u.lastName}
+                    </td>
                     <td className="px-4 py-3">{u.email}</td>
                     <td className="px-4 py-3 capitalize">{u.role}</td>
                     <td className="px-4 py-3">
@@ -161,23 +179,47 @@ export default function AdminUsersPage() {
             </table>
 
             {users.length === 0 && (
-              <div className="text-center py-6 text-gray-500">No users found.</div>
+              <div className="text-center py-6 text-gray-500">
+                No users found.
+              </div>
             )}
 
-            {/* Pagination */}
+            {/* 🔹 UPDATED PAGINATION (Prev + Numbers + Next) */}
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 py-4">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setCurrentPage(p)}
-                    className={`px-3 py-1 border rounded ${
-                      p === currentPage ? "bg-black text-white" : ""
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between px-6 py-4">
+                <button
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-1 border rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={`px-3 py-1 border rounded ${
+                          p === currentPage
+                            ? "bg-black text-white"
+                            : ""
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-1 border rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
               </div>
             )}
           </div>

@@ -4,7 +4,12 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../component/navbar";
 import Sidebar from "../component/sidebar";
 import { Vehicle } from "../../types/vehicle";
-import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "../../services/vehicle.api";
+import {
+  getVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+} from "../../services/vehicle.api";
 import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
@@ -18,11 +23,17 @@ function VehiclePage() {
   const [formData, setFormData] = useState({
     number: "",
     type: "Car" as "Car" | "Bike" | "Truck" | "Van",
-    status: "Available" as "Available" | "In-Use" | "Maintenance" | "Inactive",
+    status: "Available" as
+      | "Available"
+      | "In-Use"
+      | "Maintenance"
+      | "Inactive",
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"" | "Car" | "Bike" | "Truck" | "Van">("");
+  const [typeFilter, setTypeFilter] = useState<
+    "" | "Car" | "Bike" | "Truck" | "Van"
+  >("");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -37,7 +48,7 @@ function VehiclePage() {
       setError(null);
     } catch (err) {
       setError("Failed to fetch vehicles");
-      console.error("Error fetching vehicles:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -55,7 +66,7 @@ function VehiclePage() {
       resetForm();
     } catch (err) {
       setError("Failed to save vehicle");
-      console.error("Error saving vehicle:", err);
+      console.error(err);
     }
   };
 
@@ -70,14 +81,14 @@ function VehiclePage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
-
+    if (!window.confirm("Are you sure you want to delete this vehicle?"))
+      return;
     try {
       await deleteVehicle(id);
       await fetchVehicles();
     } catch (err) {
       setError("Failed to delete vehicle");
-      console.error("Error deleting vehicle:", err);
+      console.error(err);
     }
   };
 
@@ -106,14 +117,14 @@ function VehiclePage() {
     }
   };
 
-  // Filter vehicles by search term and type
   const filteredVehicles = vehicles.filter((v) => {
-    const matchesSearch = v.number.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = v.number
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesType = typeFilter ? v.type === typeFilter : true;
     return matchesSearch && matchesType;
   });
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
   const paginatedVehicles = filteredVehicles.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -137,160 +148,105 @@ function VehiclePage() {
             <h1 className="text-3xl font-bold">Vehicle Management</h1>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-black text-white border border-black px-4 py-2 rounded hover:bg-gray-800 transition-colors"
+              className="bg-black text-white px-4 py-2 rounded"
             >
               {showForm ? "Cancel" : "Add Vehicle"}
             </button>
           </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
           {showForm && (
             <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">{editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Vehicle Number</label>
-                  <input
-                    type="text"
-                    value={formData.number}
-                    onChange={(e) => setFormData({ ...formData, number: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                    placeholder="e.g., ABC-123"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={formData.number}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      number: e.target.value.toUpperCase(),
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="ABC-123"
+                  required
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Vehicle Type</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value as "Car" | "Bike" | "Truck" | "Van" })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Car">Car</option>
-                    <option value="Bike">Bike</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Van">Van</option>
-                  </select>
-                </div>
+                <select
+                  value={formData.type}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      type: e.target.value as any,
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="Car">Car</option>
+                  <option value="Bike">Bike</option>
+                  <option value="Truck">Truck</option>
+                  <option value="Van">Van</option>
+                </select>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status: e.target.value as "Available" | "In-Use" | "Maintenance" | "Inactive",
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Available">Available</option>
-                    <option value="In-Use">In-Use</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as any,
+                    })
+                  }
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="Available">Available</option>
+                  <option value="In-Use">In-Use</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
 
-                <div className="flex space-x-2">
-                  <button
-                    type="submit"
-                    className="bg-black text-white border border-black px-4 py-2 rounded hover:bg-gray-800 transition-colors"
-                  >
-                    {editingVehicle ? "Update" : "Create"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="bg-red-600 text-white border border-black px-4 py-2 rounded hover:bg-red-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <button className="bg-black text-white px-4 py-2 rounded">
+                  {editingVehicle ? "Update" : "Create"}
+                </button>
               </form>
             </div>
           )}
 
-          {/* Search and Filter */}
-          <div className="flex space-x-4 mb-4">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Search by vehicle number..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <select
-              value={typeFilter}
-              onChange={(e) => {
-                setTypeFilter(e.target.value as "" | "Car" | "Bike" | "Truck" | "Van");
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Types</option>
-              <option value="Car">Car</option>
-              <option value="Bike">Bike</option>
-              <option value="Truck">Truck</option>
-              <option value="Van">Van</option>
-            </select>
-          </div>
-
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full border border-black">
-              <thead className="bg-gray-200 text-black border border-black">
+            <table className="w-full border">
+              <thead className="bg-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
-                    Vehicle Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border border-black">
-                    Actions
-                  </th>
+                  <th className="p-3 text-left">Number</th>
+                  <th className="p-3 text-left">Type</th>
+                  <th className="p-3 text-left">Status</th>
+                  <th className="p-3 text-left">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-black">
-                {paginatedVehicles.map((vehicle) => (
-                  <tr key={vehicle._id} className="border border-black">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium border border-black">{vehicle.number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm border border-black">{vehicle.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-black">
+              <tbody>
+                {paginatedVehicles.map((v) => (
+                  <tr key={v._id} className="border-t">
+                    <td className="p-3">{v.number}</td>
+                    <td className="p-3">{v.type}</td>
+                    <td className="p-3">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          vehicle.status
+                        className={`px-2 py-1 rounded text-xs ${getStatusColor(
+                          v.status
                         )}`}
                       >
-                        {vehicle.status}
+                        {v.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 border border-black">
+                    <td className="p-3 space-x-2">
                       <button
-                        onClick={() => handleEdit(vehicle)}
-                        className="bg-black text-white border border-black px-3 py-1 rounded hover:bg-gray-800 transition-colors"
+                        onClick={() => handleEdit(v)}
+                        className="bg-black text-white px-3 py-1 rounded"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(vehicle._id!)}
-                        className="bg-gray-600 text-white border border-black px-3 py-1 rounded hover:bg-black
-                        -700 transition-colors"
+                        onClick={() => handleDelete(v._id!)}
+                        className="bg-gray-600 text-white px-3 py-1 rounded"
                       >
                         Delete
                       </button>
@@ -300,33 +256,39 @@ function VehiclePage() {
               </tbody>
             </table>
 
-            {filteredVehicles.length === 0 && (
-              <div className="text-center py-8 text-gray-500">No vehicles found. Add your first vehicle above.</div>
-            )}
-
-            {/* Pagination controls */}
+            {/* 🔹 UPDATED PAGINATION */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-2 py-4">
+              <div className="flex items-center justify-between px-6 py-4">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 border rounded disabled:opacity-50"
+                  className="px-4 py-1 border rounded disabled:opacity-50"
                 >
                   Prev
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 border rounded ${currentPage === page ? "bg-black text-white" : ""}`}
-                  >
-                    {page}
-                  </button>
-                ))}
+
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1 border rounded ${
+                          currentPage === page
+                            ? "bg-black text-white"
+                            : ""
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 border rounded disabled:opacity-50"
+                  className="px-4 py-1 border rounded disabled:opacity-50"
                 >
                   Next
                 </button>
