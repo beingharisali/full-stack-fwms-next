@@ -17,7 +17,6 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 Added states
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedLicenseType, setSelectedLicenseType] = useState("all");
@@ -52,12 +51,10 @@ export default function DriversPage() {
     }
   };
 
-  /* 🔹 Dynamic license types */
   const licenseTypes = Array.from(
     new Set(drivers.map((d) => d.licenseType))
   );
 
-  /* 🔹 Filter + Search */
   const filteredDrivers = drivers.filter((d) => {
     const matchesLicense =
       selectedLicenseType === "all"
@@ -71,7 +68,6 @@ export default function DriversPage() {
     return matchesLicense && matchesSearch;
   });
 
-  /* 🔹 Pagination */
   const totalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedDrivers = filteredDrivers.slice(
@@ -113,7 +109,6 @@ export default function DriversPage() {
             </button>
           </div>
 
-          {/* 🔹 Search + Filter */}
           <div className="flex gap-4 mb-4">
             <input
               type="text"
@@ -190,9 +185,9 @@ export default function DriversPage() {
             </div>
           )}
 
-          {/* 🔹 Pagination */}
+          {/* 🔹 UPDATED PAGINATION */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-3 mt-6">
+            <div className="flex items-center justify-between mt-6 px-6">
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
