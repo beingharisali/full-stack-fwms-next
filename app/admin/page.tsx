@@ -69,13 +69,32 @@ export default function AdminPage() {
     }
   };
 
+  /* ✅ VEHICLES CHART – FIXED */
   useEffect(() => {
-    if (!vehicles.length) return;
+    if (!vehicles.length) {
+      setVehicleChartData([]);
+      return;
+    }
 
     setVehicleChartData([
-      { name: "Available", value: vehicles.filter(v => v.status === "available").length },
-      { name: "Unavailable", value: vehicles.filter(v => v.status === "unavailable").length },
-      { name: "Maintenance", value: vehicles.filter(v => v.status === "maintenance").length },
+      {
+        name: "Available",
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "available"
+        ).length,
+      },
+      {
+        name: "Unavailable",
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "unavailable"
+        ).length,
+      },
+      {
+        name: "Maintenance",
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "maintenance"
+        ).length,
+      },
     ]);
   }, [vehicles]);
 
@@ -84,8 +103,14 @@ export default function AdminPage() {
 
     setDriversChartData([
       { name: "Active", value: drivers.filter(d => d.available).length },
-      { name: "Inactive", value: drivers.filter(d => !d.available && !d.assignedVehicle).length },
-      { name: "On Trip", value: drivers.filter(d => d.assignedVehicle).length },
+      {
+        name: "Inactive",
+        value: drivers.filter(d => !d.available && !d.assignedVehicle).length,
+      },
+      {
+        name: "On Trip",
+        value: drivers.filter(d => d.assignedVehicle).length,
+      },
     ]);
   }, [drivers]);
 
