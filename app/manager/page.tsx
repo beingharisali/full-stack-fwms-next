@@ -1,25 +1,24 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Navbar from "../manager/component/navbar";
+import LoadingBar from "../component/LoadingBar";
 import { getTrips } from "@/services/trip.api";
 import { getDrivers } from "@/services/driver.api";
 import { Trip } from "@/types/trip";
-import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function ManagerPage() {
   const router = useRouter();
-
   const [user, setUser] = useState<any>(null);
   const [view, setView] = useState<"none" | "trips" | "drivers">("trips");
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
-  const [loadingTrips, setLoadingTrips] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [loadingTrips, setLoadingTrips] = useState(false);
 
   const [tripSort, setTripSort] = useState<"none" | "time" | "name">("none");
   const [driverSort, setDriverSort] = useState<"none" | "name">("none");
@@ -28,41 +27,28 @@ export default function ManagerPage() {
   const [tripPage, setTripPage] = useState(1);
   const [driverPage, setDriverPage] = useState(1);
 
-
-  
+  // --- Auth & initial data fetch ---
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/");
-      return;
-    }
+    if (!token) return router.push("/");
 
     try {
-      const decodedUser = JSON.parse(atob(token.split(".")[1]));
-      setUser(decodedUser);
+      setUser(JSON.parse(atob(token.split(".")[1])));
     } catch {
       localStorage.removeItem("token");
-      router.push("/");
-      return;
+      return router.push("/");
     }
-const delay = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms));
 
+    const delay = (ms: number) =>
+      new Promise(resolve => setTimeout(resolve, ms));
 
     const init = async () => {
-  setPageLoading(true);
-
-  await Promise.all([
-    fetchTrips(),
-    fetchDrivers(),
-    delay(2000) 
-  ]);
-
-  setPageLoading(false);
-};
-
+      setPageLoading(true);
+      await Promise.all([fetchTrips(), fetchDrivers(), delay(1000)]);
+      setPageLoading(false);
+    };
     init();
-  }, [router]);
+  }, []);
 
   const fetchTrips = async () => {
     try {
@@ -73,24 +59,20 @@ const delay = (ms: number) =>
       setLoadingTrips(false);
     }
   };
-const fetchDrivers = async () => {
-  try {
-    const res: any = await getDrivers();
 
-    if (Array.isArray(res)) {
-      setDrivers(res);
-    } else if (Array.isArray(res?.drivers)) {
-      setDrivers(res.drivers);
-    } else if (Array.isArray(res?.data)) {
-      setDrivers(res.data);
-    } else {
+  const fetchDrivers = async () => {
+    try {
+      const res: any = await getDrivers();
+      const driverList = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.drivers)
+        ? res.drivers
+        : [];
+      setDrivers(driverList);
+    } catch {
       setDrivers([]);
     }
-  } catch {
-    setDrivers([]);
-  }
-};
-
+  };
 
   const handleView = (type: "none" | "trips" | "drivers") => {
     setView(type);
@@ -98,84 +80,70 @@ const fetchDrivers = async () => {
     setDriverPage(1);
   };
 
-  const sortedTrips =
-    tripSort === "time"
-      ? [...trips].sort((a, b) =>
-          (a.departureTime || "").localeCompare(b.departureTime || "")
-        )
-      : tripSort === "name"
-      ? [...trips].sort((a, b) =>
-          a.destination.localeCompare(b.destination)
-        )
-      : trips;
+  // --- Trips sorting & pagination ---
+  const sortedTrips = useMemo(() => {
+    if (tripSort === "time")
+      return [...trips].sort((a, b) =>
+        (a.departureTime || "").localeCompare(b.departureTime || "")
+      );
+    if (tripSort === "name")
+      return [...trips].sort((a, b) => a.destination.localeCompare(b.destination));
+    return trips;
+  }, [trips, tripSort]);
 
-  const tripTotalPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE);
+  const paginatedTrips = useMemo(() => {
+    const start = (tripPage - 1) * ITEMS_PER_PAGE;
+    return sortedTrips.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedTrips, tripPage]);
 
-  const paginatedTrips = sortedTrips.slice(
-    (tripPage - 1) * ITEMS_PER_PAGE,
-    tripPage * ITEMS_PER_PAGE
-  );
+  // --- Drivers filtering, sorting & pagination ---
+  const filteredDrivers = useMemo(() => {
+    let list = Array.isArray(drivers) ? [...drivers] : [];
+    if (driverLicenseFilter !== "all") {
+      list = list.filter(d => d.licenseType === driverLicenseFilter);
+    }
+    if (driverSort === "name") {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [drivers, driverLicenseFilter, driverSort]);
 
+  const paginatedDrivers = useMemo(() => {
+    const start = (driverPage - 1) * ITEMS_PER_PAGE;
+    return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredDrivers, driverPage]);
 
-  const safeDrivers = Array.isArray(drivers) ? drivers : [];
-
-  const filteredDrivers =
-    driverLicenseFilter === "all"
-      ? safeDrivers
-      : safeDrivers.filter(d => d.licenseType === driverLicenseFilter);
-
-  const sortedDrivers =
-    driverSort === "name"
-      ? [...filteredDrivers].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        )
-      : filteredDrivers;
-
-  const driverTotalPages = Math.ceil(
-    sortedDrivers.length / ITEMS_PER_PAGE
-  );
-
-  const paginatedDrivers = sortedDrivers.slice(
-    (driverPage - 1) * ITEMS_PER_PAGE,
-    driverPage * ITEMS_PER_PAGE
-  );
-
-
-  
-  
+  // --- Page loading ---
   if (pageLoading) {
-    return <LoadingBar title="Loading Manager Dashboard" duration={4} />;
+    return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100 text-black">
+    <div className="min-h-screen bg-gray-100 text-black">
       <Navbar setView={handleView} currentView={view} />
 
-      <main className="flex-1 p-8">
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-lg font-semibold">Total Trips</h3>
-            <p className="text-3xl font-bold text-blue-700">{trips.length}</p>
+      <main className="p-8 space-y-10">
+        {/* STATS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow p-6">
+            <h3 className="text-lg font-bold text-black">Total Trips</h3>
+            <p className="text-3xl font-medium">{trips.length}</p>
           </div>
-
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-lg font-semibold">Total Drivers</h3>
-            <p className="text-3xl font-bold text-green-700">{safeDrivers.length}</p>
+          <div className="bg-white rounded-xl shadow p-6">
+            <h3 className="text-lg font-bold text-black">Total Drivers</h3>
+            <p className="text-3xl font-medium">{drivers.length}</p>
           </div>
         </div>
 
+        {/* TRIPS TABLE */}
         {view === "trips" && (
-          <div className="rounded-xl bg-white shadow">
-            <h2 className="border-b p-6 text-xl font-bold">Trips</h2>
-
-            <div className="p-4">
+          <div className="bg-white rounded-xl shadow">
+            <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
+              <h2 className="text-lg font-semibold">Trips</h2>
               <select
                 value={tripSort}
-                onChange={e => {
-                  setTripSort(e.target.value as any);
-                  setTripPage(1);
-                }}
-                className="border rounded px-4 py-2 bg-white"
+                onChange={e => setTripSort(e.target.value as any)}
+                className="bg-white text-black px-3 py-1 rounded"
               >
                 <option value="none">Normal Order</option>
                 <option value="time">Early Departure</option>
@@ -184,7 +152,7 @@ const fetchDrivers = async () => {
             </div>
 
             <table className="w-full">
-              <thead className="bg-gray-200">
+              <thead className="bg-slate-800 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Departure</th>
                   <th className="px-4 py-3 text-left">Date</th>
@@ -194,44 +162,33 @@ const fetchDrivers = async () => {
               </thead>
 
               <tbody>
-                {loadingTrips ? (
-                  <tr>
-                    <td colSpan={4} className="p-6 text-center">
-                      Loading...
+                {paginatedTrips.map(trip => (
+                  <tr key={trip._id} className="border-b hover:bg-gray-100">
+                    <td className="px-4 py-3">{trip.departure}</td>
+                    <td className="px-4 py-3">
+                      {new Date(trip.date).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3">{trip.destination}</td>
+                    <td className="px-4 py-3">{trip.departureTime || "-"}</td>
                   </tr>
-                ) : (
-                  paginatedTrips.map(trip => (
-                    <tr key={trip._id} className="border-b hover:bg-gray-100">
-                      <td className="px-4 py-3">{trip.departure}</td>
-                      <td className="px-4 py-3">
-                        {new Date(trip.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">{trip.destination}</td>
-                      <td className="px-4 py-3">{trip.departureTime || "-"}</td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
 
-            <div className="flex justify-between p-4">
+            {/* Pagination */}
+            <div className="flex justify-between items-center p-4">
               <button
                 disabled={tripPage === 1}
                 onClick={() => setTripPage(p => p - 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-slate-900 text-white rounded disabled:opacity-40"
               >
                 Previous
               </button>
-
-              <span>
-                Page {tripPage} of {tripTotalPages}
-              </span>
-
+              <span className="text-sm">Page {tripPage}</span>
               <button
-                disabled={tripPage === tripTotalPages}
+                disabled={tripPage * ITEMS_PER_PAGE >= trips.length}
                 onClick={() => setTripPage(p => p + 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-slate-900 text-white rounded"
               >
                 Next
               </button>
@@ -239,40 +196,42 @@ const fetchDrivers = async () => {
           </div>
         )}
 
+        {/* DRIVERS TABLE */}
         {view === "drivers" && (
-          <div className="rounded-xl bg-white shadow">
-            <h2 className="border-b p-6 text-xl font-bold">Drivers</h2>
+          <div className="bg-white rounded-xl shadow">
+            <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
+              <h2 className="text-lg font-semibold">Drivers</h2>
+              <div className="flex gap-3">
+                <select
+                  value={driverLicenseFilter}
+                  onChange={e => {
+                    setDriverLicenseFilter(e.target.value);
+                    setDriverPage(1);
+                  }}
+                  className="bg-white text-black px-3 py-1 rounded"
+                >
+                  <option value="all">All License</option>
+                  <option value="LTV">LTV</option>
+                  <option value="HTV">HTV</option>
+                  <option value="MCV">MCV</option>
+                </select>
 
-            <div className="flex gap-4 p-4">
-              <select
-                value={driverLicenseFilter}
-                onChange={e => {
-                  setDriverLicenseFilter(e.target.value);
-                  setDriverPage(1);
-                }}
-                className="border rounded px-4 py-2 bg-white"
-              >
-                <option value="all">All License</option>
-                <option value="LTV">LTV</option>
-                <option value="HTV">HTV</option>
-                <option value="MCV">MCV</option>
-              </select>
-
-              <select
-                value={driverSort}
-                onChange={e => {
-                  setDriverSort(e.target.value as any);
-                  setDriverPage(1);
-                }}
-                className="border rounded px-4 py-2 bg-white"
-              >
-                <option value="none">Normal</option>
-                <option value="name">Name (A–Z)</option>
-              </select>
+                <select
+                  value={driverSort}
+                  onChange={e => {
+                    setDriverSort(e.target.value as any);
+                    setDriverPage(1);
+                  }}
+                  className="bg-white text-black px-3 py-1 rounded"
+                >
+                  <option value="none">Normal</option>
+                  <option value="name">Name (A–Z)</option>
+                </select>
+              </div>
             </div>
 
             <table className="w-full">
-              <thead className="bg-gray-200">
+              <thead className="bg-slate-800 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
                   <th className="px-4 py-3 text-left">License No</th>
@@ -291,23 +250,24 @@ const fetchDrivers = async () => {
               </tbody>
             </table>
 
-            <div className="flex justify-between p-4">
+            {/* Pagination */}
+            <div className="flex justify-between items-center p-4">
               <button
                 disabled={driverPage === 1}
                 onClick={() => setDriverPage(p => p - 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-slate-900 text-white rounded disabled:opacity-40"
               >
                 Previous
               </button>
 
-              <span>
-                Page {driverPage} of {driverTotalPages}
+              <span className="text-sm">
+                Page {driverPage} of {Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE)}
               </span>
 
               <button
-                disabled={driverPage === driverTotalPages}
+                disabled={driverPage * ITEMS_PER_PAGE >= filteredDrivers.length}
                 onClick={() => setDriverPage(p => p + 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
+                className="px-4 py-2 bg-slate-900 text-white rounded"
               >
                 Next
               </button>

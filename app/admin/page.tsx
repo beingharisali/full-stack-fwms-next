@@ -30,7 +30,7 @@ export default function AdminPage() {
 
   const [loading, setLoading] = useState(true);
 
-  /* ================= AUTH ================= */
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -50,7 +50,7 @@ export default function AdminPage() {
     fetchDashboardData();
   }, []);
 
-  /* ================= FETCH DATA ================= */
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -60,15 +60,17 @@ export default function AdminPage() {
         getVehicles(),
         getTrips(),
       ]);
+      const driversData = driversRes;
+      const vehiclesData = vehiclesRes;
+      const tripsData = tripsRes;
+
 
       setDrivers(driversRes?.drivers || driversRes || []);
       setVehicles(vehiclesRes || []);
       setTrips(tripsRes || []);
-      setDrivers(driversData?.drivers || driversData || []);
-      setVehicles(vehiclesData || []);
-      setTrips(tripsData || []);
+      
 
-      // Ensure loading lasts at least 4 seconds
+    
       setTimeout(() => {
         setLoading(false);
       }, 4000);
@@ -78,7 +80,7 @@ export default function AdminPage() {
     }
   };
 
-  /* ================= VEHICLE CHART ================= */
+  
   useEffect(() => {
     if (!vehicles.length) {
       setVehicleChartData([]);
@@ -107,7 +109,7 @@ export default function AdminPage() {
     ]);
   }, [vehicles]);
 
-  /* ================= DRIVERS CHART ================= */
+  
   useEffect(() => {
     if (!drivers.length) {
       setDriversChartData([]);
@@ -134,7 +136,7 @@ export default function AdminPage() {
     ]);
   }, [drivers]);
 
-  /* ================= TRIPS CHART (DATE BASED FIX) ================= */
+  
   useEffect(() => {
     if (!trips || trips.length === 0) {
       setTripsChartData([]);
@@ -184,7 +186,7 @@ export default function AdminPage() {
         <Sidebar />
 
         <main className="p-8 flex-1">
-          {/* ===== STATS ===== */}
+         
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold">Total Drivers</h3>
@@ -207,7 +209,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ===== CHARTS ===== */}
+         
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-4">
