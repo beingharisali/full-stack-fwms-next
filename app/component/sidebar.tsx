@@ -1,42 +1,49 @@
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function Sidebar() {
-	console.log()
-	return (
-		<aside className="w-64  bg-gray-800 shadow-md p-6 border-r border-gray-600">
-			{/* <h1 className="text-2xl font-bold mb-6 text-white">Admin Panel</h1> */}
-			<nav className="flex flex-col space-y-2">
-				<Link
-					href="/admin"
-					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
-					Dashboard
-				</Link>
-				<Link
-					href="/users"
-					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
-					Users
-				</Link>
-				
-				<Link
-					href="/vehicle"
-					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
-					Vehicles
-				</Link>
-				<Link
-					href="/trip"
-					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
-					Trips
-				</Link>
-				<Link
-			
-					href="/driver"
-					className="px-4 py-2 rounded text-white hover:bg-gray-700 transition-colors">
-					driver
-				</Link>
-			</nav>
-		</aside>
-	);
+  const pathname = usePathname();
+
+  const linkClass = (path: string) =>
+    `px-4 py-2 rounded-md text-sm font-medium transition
+     ${
+       pathname === path
+         ? "bg-gray-900 text-white shadow"
+         : "text-gray-300 hover:bg-gray-700 hover:text-white"
+     }`;
+
+  return (
+    <aside className="w-64 bg-gray-900 border-r border-gray-700 shadow-lg p-6">
+      {/* TITLE */}
+      <h1 className="text-xl font-semibold text-white mb-8 tracking-wide">
+        Admin Panel
+      </h1>
+
+      {/* NAV */}
+      <nav className="flex flex-col space-y-2">
+        <Link href="/admin" className={linkClass("/admin")}>
+          Dashboard
+        </Link>
+
+        <Link href="/users" className={linkClass("/users")}>
+          Users
+        </Link>
+
+        <Link href="/vehicle" className={linkClass("/vehicle")}>
+          Vehicles
+        </Link>
+
+        <Link href="/trip" className={linkClass("/trip")}>
+          Trips
+        </Link>
+
+        <Link href="/driver" className={linkClass("/driver")}>
+          driver
+        </Link>
+      </nav>
+    </aside>
+  );
 }
 
 export default Sidebar;
