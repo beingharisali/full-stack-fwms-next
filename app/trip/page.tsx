@@ -10,7 +10,6 @@ import { Trip } from "@/types/trip";
 
 const ITEMS_PER_PAGE = 5;
 
-// ✅ PAGINATION HELPER (responsive / windowed)
 const getPaginationRange = (
   currentPage: number,
   totalPages: number,
@@ -68,14 +67,12 @@ export default function TripsPage() {
     setTrips((prev) => prev.filter((t) => t._id !== id));
   };
 
-  // 🔥 FILTER
   let filteredTrips = trips.filter((trip) =>
     `${trip.departure} ${trip.destination}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
-  // 🔃 SORT
   filteredTrips.sort((a, b) => {
     const nameA = `${a.departure} ${a.destination}`.toLowerCase();
     const nameB = `${b.departure} ${b.destination}`.toLowerCase();
@@ -85,7 +82,6 @@ export default function TripsPage() {
       : nameB.localeCompare(nameA);
   });
 
-  // 📄 PAGINATION
   const totalPages = Math.ceil(filteredTrips.length / ITEMS_PER_PAGE);
   const paginatedTrips = filteredTrips.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -102,7 +98,6 @@ export default function TripsPage() {
         <Sidebar />
 
         <div className="flex-1 p-8">
-          {/* HEADER */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Trips</h1>
             <button
@@ -119,7 +114,6 @@ export default function TripsPage() {
             </div>
           )}
 
-          {/* 🔍 FILTER BAR */}
           <div className="flex gap-4 mb-4 flex-wrap">
             <input
               placeholder="Search by departure or destination..."
@@ -141,7 +135,6 @@ export default function TripsPage() {
             </button>
           </div>
 
-          {/* TABLE */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="w-full border border-black">
               <thead className="bg-gray-200 border border-black">
@@ -190,7 +183,6 @@ export default function TripsPage() {
               </div>
             )}
 
-            {/* 🔹 RESPONSIVE PAGINATION */}
             {totalPages > 1 && (
               <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-4 sm:justify-between">
                 <button

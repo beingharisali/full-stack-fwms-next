@@ -15,6 +15,7 @@ export const createTrip = async (data: Trip): Promise<Trip> => {
 export const getTrips = async (): Promise<Trip[]> => {
   try {
     const res = await http.get("/trips");
+    console.log("res", res)
 
     // backend agar { data: [] } bheje
     if (Array.isArray(res.data?.data)) {

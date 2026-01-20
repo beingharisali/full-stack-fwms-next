@@ -17,11 +17,9 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /* 🔍 FILTERS */
   const [search, setSearch] = useState("");
   const [licenseType, setLicenseType] = useState("all");
 
-  /* 📄 PAGINATION */
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -45,7 +43,6 @@ export default function DriversPage() {
     setDrivers((prev) => prev.filter((d) => d._id !== id));
   };
 
-  /* 🔍 FILTERING */
   const filteredDrivers = drivers.filter((d) => {
     const matchesSearch =
       d.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,7 +54,6 @@ export default function DriversPage() {
     return matchesSearch && matchesLicense;
   });
 
-  /* 📄 PAGINATION */
   const totalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
 
   const paginatedDrivers = filteredDrivers.slice(
@@ -77,7 +73,6 @@ export default function DriversPage() {
         <Sidebar />
 
         <div className="flex-1 p-8">
-          {/* HEADER */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h1 className="text-3xl font-bold">Drivers</h1>
             <button
@@ -88,14 +83,12 @@ export default function DriversPage() {
             </button>
           </div>
 
-          {/* ERROR */}
           {error && (
             <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
               {error}
             </div>
           )}
 
-          {/* FILTER BAR */}
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <input
               placeholder="Search by name or license number..."
@@ -123,7 +116,6 @@ export default function DriversPage() {
             </select>
           </div>
 
-          {/* TABLE */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="w-full border border-black">
               <thead className="bg-gray-200 border border-black">
@@ -171,7 +163,6 @@ export default function DriversPage() {
             )}
           </div>
 
-          {/* PAGINATION */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 gap-4">
               <button

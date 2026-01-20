@@ -6,14 +6,15 @@ import { useEffect, useState, useMemo } from "react";
 import DriverNavbar from "../driver/component/navbar";
 import { getTrips } from "@/services/trip.api";
 import LoadingBar from "../../component/LoadingBar";
+import { Trip } from "@/types/trip";
 
-interface Trip {
-  id: number;
-  status: "Pending" | "Ongoing" | "Completed";
-  pickup: string;
-  drop: string;
-  createdAt: string;
-}
+// interface Trip {
+//   _id: number;
+//   status: "Pending" | "Ongoing" | "Completed";
+//   pickup: string;
+//   drop: string;
+//   createdAt: string;
+// }
 
 const ITEMS_PER_PAGE = 5;
 
@@ -54,6 +55,7 @@ export default function DriverPage() {
     try {
       setLoadingTrips(true);
       const data = await getTrips();
+      console.log('data', data)
       setTrips(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -138,8 +140,8 @@ export default function DriverPage() {
                   </tr>
                 ) : (
                   paginatedTrips.map(trip => (
-                    <tr key={trip.id} className="border-b hover:bg-gray-100">
-                      <td className="px-4 py-3">#{trip.id}</td>
+                    <tr key={trip._id} className="border-b hover:bg-gray-100">
+                      <td className="px-4 py-3">#{trip._id}</td>
                       <td className="px-4 py-3">
                         <span
                           className={`px-2 py-1 rounded text-xs font-semibold ${

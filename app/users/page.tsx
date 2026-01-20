@@ -55,7 +55,6 @@ export default function AdminUsersPage() {
     setUsers((prev) => prev.filter((u) => u._id !== id));
   };
 
-  /* 🔍 FILTER + SORT */
   let filteredUsers =
     filterRole === "all" ? users : users.filter((u) => u.role === filterRole);
 
@@ -75,7 +74,6 @@ export default function AdminUsersPage() {
       : nameB.localeCompare(nameA);
   });
 
-  /* 📄 PAGINATION */
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
 
   const paginatedUsers = filteredUsers.slice(
@@ -83,7 +81,6 @@ export default function AdminUsersPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  /* 📱 RESPONSIVE PAGE NUMBERS */
   const startPage = Math.max(
     1,
     currentPage - Math.floor(MAX_VISIBLE_PAGES / 2)
@@ -116,7 +113,6 @@ export default function AdminUsersPage() {
             </div>
           )}
 
-          {/* FILTERS */}
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <input
               placeholder="Search by name..."
@@ -150,9 +146,8 @@ export default function AdminUsersPage() {
             </button>
           </div>
 
-          {/* TABLE */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full border border-black min-w-[600px]">
+            <table className="w-full border border-black min-w-600px">
               <thead className="bg-gray-200 border border-black">
                 <tr>
                   <th className="px-4 py-3 border text-left">Name</th>
@@ -182,7 +177,6 @@ export default function AdminUsersPage() {
               </tbody>
             </table>
 
-            {/* 📱 RESPONSIVE PAGINATION */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4">
                 <button

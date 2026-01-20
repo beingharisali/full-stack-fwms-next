@@ -35,11 +35,9 @@ export default function SignupPage() {
 				form.role
 			);
 
-			// Save token in localStorage
 			localStorage.setItem("token", res.token);
 			localStorage.setItem("role", form.role);
 
-			// Redirect based on role
 			switch (form.role) {
 				case "driver":
 					router.push("/dashboard/driver");
