@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
 import LoadingBar from "../component/LoadingBar";
+import { motion } from "framer-motion";
+import { Users, Car, CheckCircle, Route } from "lucide-react";
 
 import VehicleChart from "../component/charts/vehicleChart";
 import DriversChart from "../component/charts/driversChart";
@@ -167,17 +169,65 @@ export default function AdminPage() {
               <h3 className="text-lg font-semibold">Total Vehicles</h3>
               <p className="text-2xl font-bold">{vehicles.length}</p>
             </div>
+          {/* STATS */}
+          
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold">Available Vehicles</h3>
-              <p className="text-2xl font-bold">{availableVehicles}</p>
-            </div>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  
+  {/* Total Drivers */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.3 }}
+    className="relative bg-white rounded-lg shadow-md p-6 border-l-4 border-black hover:shadow-lg"
+  >
+    <Users className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+    <h3 className="text-lg font-semibold">Total Drivers</h3>
+    <p className="text-2xl font-bold mt-2">{drivers.length}</p>
+  </motion.div>
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold">Total Trips</h3>
-              <p className="text-2xl font-bold">{trips.length}</p>
-            </div>
-          </div>
+  {/* Total Vehicles */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.3 }}
+    className="relative bg-white rounded-lg shadow-md p-6 border-l-4 border-black hover:shadow-lg"
+  >
+    <Car className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+    <h3 className="text-lg font-semibold">Total Vehicles</h3>
+    <p className="text-2xl font-bold mt-2">{vehicles.length}</p>
+  </motion.div>
+
+  {/* Available Vehicles */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.3 }}
+    className="relative bg-white rounded-lg shadow-md p-6 border-l-4 border-black hover:shadow-lg"
+  >
+    <CheckCircle className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+    <h3 className="text-lg font-semibold">Available Vehicles</h3>
+    <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
+  </motion.div>
+
+  {/* Total Trips */}
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.3 }}
+    className="relative bg-white rounded-lg shadow-md p-6 border-l-4 border-black hover:shadow-lg"
+  >
+    <Route className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+    <h3 className="text-lg font-semibold">Total Trips</h3>
+    <p className="text-2xl font-bold mt-2">{trips.length}</p>
+  </motion.div>
+
+</div>
+
 
          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
