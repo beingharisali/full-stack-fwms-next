@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Navbar from "../component/navbar";
+import { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
+import Navbar from "../component/navbar";
+import LoadingBar from "../component/LoadingBar";
 import { Vehicle } from "../../types/vehicle";
 import {
   getVehicles,
@@ -10,16 +11,41 @@ import {
   updateVehicle,
   deleteVehicle,
 } from "../../services/vehicle.api";
-import LoadingBar from "../component/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
-function VehiclePage() {
+const getPaginationRange = (
+  currentPage: number,
+  totalPages: number,
+  delta = 2
+) => {
+  const range: (number | string)[] = [];
+  const left = Math.max(2, currentPage - delta);
+  const right = Math.min(totalPages - 1, currentPage + delta);
+
+  range.push(1);
+
+  if (left > 2) range.push("...");
+
+  for (let i = left; i <= right; i++) {
+    range.push(i);
+  }
+
+  if (right < totalPages - 1) range.push("...");
+
+  if (totalPages > 1) range.push(totalPages);
+
+  return range;
+};
+
+export default function VehiclePage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+
   const [formData, setFormData] = useState({
     number: "",
     type: "Car" as "Car" | "Bike" | "Truck" | "Van",
@@ -30,10 +56,11 @@ function VehiclePage() {
       | "Inactive",
   });
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<
-    "" | "Car" | "Bike" | "Truck" | "Van"
-  >("");
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -42,13 +69,10 @@ function VehiclePage() {
 
   const fetchVehicles = async () => {
     try {
-      setLoading(true);
       const data = await getVehicles();
       setVehicles(data);
-      setError(null);
-    } catch (err) {
+    } catch {
       setError("Failed to fetch vehicles");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -64,9 +88,8 @@ function VehiclePage() {
       }
       await fetchVehicles();
       resetForm();
-    } catch (err) {
+    } catch {
       setError("Failed to save vehicle");
-      console.error(err);
     }
   };
 
@@ -81,49 +104,36 @@ function VehiclePage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this vehicle?"))
-      return;
-    try {
-      await deleteVehicle(id);
-      await fetchVehicles();
-    } catch (err) {
-      setError("Failed to delete vehicle");
-      console.error(err);
-    }
+    if (!confirm("Are you sure?")) return;
+    await deleteVehicle(id);
+    setVehicles((prev) => prev.filter((v) => v._id !== id));
   };
 
   const resetForm = () => {
-    setFormData({
-      number: "",
-      type: "Car",
-      status: "Available",
-    });
+    setFormData({ number: "", type: "Car", status: "Available" });
     setEditingVehicle(null);
     setShowForm(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Available":
-        return "bg-green-100 text-green-800";
-      case "In-Use":
-        return "bg-blue-100 text-blue-800";
-      case "Maintenance":
-        return "bg-yellow-100 text-yellow-800";
-      case "Inactive":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  let filteredVehicles = vehicles;
 
-  const filteredVehicles = vehicles.filter((v) => {
-    const matchesSearch = v.number
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter ? v.type === typeFilter : true;
-    return matchesSearch && matchesType;
-  });
+  if (filterType !== "all") {
+    filteredVehicles = filteredVehicles.filter((v) => v.type === filterType);
+  }
+
+  if (filterStatus !== "all") {
+    filteredVehicles = filteredVehicles.filter((v) => v.status === filterStatus);
+  }
+
+  if (search) {
+    filteredVehicles = filteredVehicles.filter((v) =>
+      v.number.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
+  filteredVehicles.sort((a, b) =>
+    sortOrder === "asc" ? a.number.localeCompare(b.number) : b.number.localeCompare(a.number)
+  );
 
   const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
   const paginatedVehicles = filteredVehicles.slice(
@@ -131,21 +141,32 @@ function VehiclePage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handlePageChange = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
+  const statusColor = (status: string) => {
+    switch (status) {
+      case "Available":
+        return "bg-green-100 text-green-700";
+      case "In-Use":
+        return "bg-blue-100 text-blue-700";
+      case "Maintenance":
+        return "bg-yellow-100 text-yellow-700";
+      case "Inactive":
+        return "bg-red-100 text-red-700";
+      default:
+        return "";
+    }
   };
 
   if (loading) return <LoadingBar title="Loading Vehicles" duration={2} />;
 
   return (
-    <div className="flex min-h-screen bg-white flex-col text-black">
+    <div className="flex min-h-screen bg-white text-black flex-col">
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
+
         <div className="flex-1 p-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Vehicle Management</h1>
+            <h1 className="text-3xl font-bold">Vehicles</h1>
             <button
               onClick={() => setShowForm(!showForm)}
               className="bg-black text-white px-4 py-2 rounded"
@@ -154,35 +175,82 @@ function VehiclePage() {
             </button>
           </div>
 
+          {error && (
+            <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-4 mb-4 flex-wrap">
+            <input
+              placeholder="Search vehicle number..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="flex-1 border px-3 py-2 rounded"
+            />
+
+            <select
+              value={filterType}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="all">All Types</option>
+              <option value="Car">Car</option>
+              <option value="Bike">Bike</option>
+              <option value="Truck">Truck</option>
+              <option value="Van">Van</option>
+            </select>
+
+            <select
+              value={filterStatus}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border px-3 py-2 rounded"
+            >
+              <option value="all">All Status</option>
+              <option value="Available">Available</option>
+              <option value="In-Use">In-Use</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <button
+              onClick={() =>
+                setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+              }
+              className="border px-4 py-2 rounded bg-black text-white"
+            >
+              {sortOrder === "asc" ? "A → Z" : "Z → A"}
+            </button>
+          </div>
+
           {showForm && (
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}
-              </h2>
+            <div className="bg-white rounded shadow p-6 mb-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input
-                  type="text"
                   value={formData.number}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      number: e.target.value.toUpperCase(),
-                    })
+                    setFormData({ ...formData, number: e.target.value.toUpperCase() })
                   }
-                  className="w-full px-3 py-2 border rounded"
                   placeholder="ABC-123"
                   required
+                  className="w-full border px-3 py-2 rounded"
                 />
 
                 <select
                   value={formData.type}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      type: e.target.value as any,
-                    })
+                    setFormData({ ...formData, type: e.target.value as any })
                   }
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full border px-3 py-2 rounded"
                 >
                   <option value="Car">Car</option>
                   <option value="Bike">Bike</option>
@@ -193,12 +261,9 @@ function VehiclePage() {
                 <select
                   value={formData.status}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      status: e.target.value as any,
-                    })
+                    setFormData({ ...formData, status: e.target.value as any })
                   }
-                  className="w-full px-3 py-2 border rounded"
+                  className="w-full border px-3 py-2 rounded"
                 >
                   <option value="Available">Available</option>
                   <option value="In-Use">In-Use</option>
@@ -213,31 +278,30 @@ function VehiclePage() {
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full border">
-              <thead className="bg-gray-200">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full border border-black">
+              <thead className="bg-gray-200 border border-black">
                 <tr>
-                  <th className="p-3 text-left">Number</th>
-                  <th className="p-3 text-left">Type</th>
-                  <th className="p-3 text-left">Status</th>
-                  <th className="p-3 text-left">Actions</th>
+                  <th className="px-4 py-3 border">Number</th>
+                  <th className="px-4 py-3 border">Type</th>
+                  <th className="px-4 py-3 border">Status</th>
+                  <th className="px-4 py-3 border">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {paginatedVehicles.map((v) => (
-                  <tr key={v._id} className="border-t">
-                    <td className="p-3">{v.number}</td>
-                    <td className="p-3">{v.type}</td>
-                    <td className="p-3">
+                  <tr key={v._id} className="border">
+                    <td className="px-4 py-3">{v.number}</td>
+                    <td className="px-4 py-3">{v.type}</td>
+                    <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded text-xs ${getStatusColor(
-                          v.status
-                        )}`}
+                        className={`px-2 py-1 rounded text-xs ${statusColor(v.status)}`}
                       >
                         {v.status}
                       </span>
                     </td>
-                    <td className="p-3 space-x-2">
+                    <td className="px-4 py-3 space-x-2">
                       <button
                         onClick={() => handleEdit(v)}
                         className="bg-black text-white px-3 py-1 rounded"
@@ -256,39 +320,48 @@ function VehiclePage() {
               </tbody>
             </table>
 
-            {/* 🔹 UPDATED PAGINATION */}
+            {filteredVehicles.length === 0 && (
+              <div className="text-center py-6 text-gray-500">
+                No vehicles found.
+              </div>
+            )}
+
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-4 sm:justify-between">
                 <button
-                  onClick={() => handlePageChange(currentPage - 1)}
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-1 border rounded disabled:opacity-50"
+                  className="px-3 py-1 border rounded disabled:opacity-50"
                 >
                   Prev
                 </button>
 
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
+                <div className="flex flex-wrap gap-1 justify-center">
+                  {getPaginationRange(currentPage, totalPages).map((p, i) =>
+                    p === "..." ? (
+                      <span key={i} className="px-2 py-1 text-gray-500">
+                        ...
+                      </span>
+                    ) : (
                       <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 border rounded ${
-                          currentPage === page
-                            ? "bg-black text-white"
-                            : ""
+                        key={p}
+                        onClick={() => setCurrentPage(p as number)}
+                        className={`px-3 py-1 border rounded text-sm ${
+                          p === currentPage ? "bg-black text-white" : ""
                         }`}
                       >
-                        {page}
+                        {p}
                       </button>
                     )
                   )}
                 </div>
 
                 <button
-                  onClick={() => handlePageChange(currentPage + 1)}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
                   disabled={currentPage === totalPages}
-                  className="px-4 py-1 border rounded disabled:opacity-50"
+                  className="px-3 py-1 border rounded disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -300,5 +373,3 @@ function VehiclePage() {
     </div>
   );
 }
-
-export default VehiclePage;

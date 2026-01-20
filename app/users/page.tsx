@@ -14,6 +14,7 @@ type User = {
 };
 
 const ITEMS_PER_PAGE = 5;
+const MAX_VISIBLE_PAGES = 5;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -54,6 +55,7 @@ export default function AdminUsersPage() {
     setUsers((prev) => prev.filter((u) => u._id !== id));
   };
 
+  /* 🔍 FILTER + SORT */
   let filteredUsers =
     filterRole === "all" ? users : users.filter((u) => u.role === filterRole);
 
@@ -73,11 +75,20 @@ export default function AdminUsersPage() {
       : nameB.localeCompare(nameA);
   });
 
+  /* 📄 PAGINATION */
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  /* 📱 RESPONSIVE PAGE NUMBERS */
+  const startPage = Math.max(
+    1,
+    currentPage - Math.floor(MAX_VISIBLE_PAGES / 2)
+  );
+  const endPage = Math.min(totalPages, startPage + MAX_VISIBLE_PAGES - 1);
 
   if (loading)
     return (
@@ -95,6 +106,7 @@ export default function AdminUsersPage() {
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
+
         <div className="flex-1 p-8">
           <h1 className="text-3xl font-bold mb-6">Users</h1>
 
@@ -104,8 +116,8 @@ export default function AdminUsersPage() {
             </div>
           )}
 
-          {/* Filters */}
-          <div className="flex gap-4 mb-4">
+          {/* FILTERS */}
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
             <input
               placeholder="Search by name..."
               value={searchName}
@@ -138,23 +150,15 @@ export default function AdminUsersPage() {
             </button>
           </div>
 
-          {/* Table */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full border border-black">
+          {/* TABLE */}
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full border border-black min-w-[600px]">
               <thead className="bg-gray-200 border border-black">
                 <tr>
-                  <th className="px-4 py-3 border border-black text-left">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 border border-black text-left">
-                    Email
-                  </th>
-                  <th className="px-4 py-3 border border-black text-left">
-                    Role
-                  </th>
-                  <th className="px-4 py-3 border border-black text-left">
-                    Actions
-                  </th>
+                  <th className="px-4 py-3 border text-left">Name</th>
+                  <th className="px-4 py-3 border text-left">Email</th>
+                  <th className="px-4 py-3 border text-left">Role</th>
+                  <th className="px-4 py-3 border text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -178,15 +182,9 @@ export default function AdminUsersPage() {
               </tbody>
             </table>
 
-            {users.length === 0 && (
-              <div className="text-center py-6 text-gray-500">
-                No users found.
-              </div>
-            )}
-
-            {/* 🔹 UPDATED PAGINATION (Prev + Numbers + Next) */}
+            {/* 📱 RESPONSIVE PAGINATION */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4">
                 <button
                   onClick={() => setCurrentPage((p) => p - 1)}
                   disabled={currentPage === 1}
@@ -195,22 +193,23 @@ export default function AdminUsersPage() {
                   Prev
                 </button>
 
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (p) => (
-                      <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`px-3 py-1 border rounded ${
-                          p === currentPage
-                            ? "bg-black text-white"
-                            : ""
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    )
-                  )}
+                <div className="flex gap-2 overflow-x-auto max-w-full scrollbar-hide">
+                  {Array.from(
+                    { length: endPage - startPage + 1 },
+                    (_, i) => startPage + i
+                  ).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`px-3 py-1 border rounded whitespace-nowrap ${
+                        p === currentPage
+                          ? "bg-black text-white"
+                          : ""
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
                 </div>
 
                 <button
