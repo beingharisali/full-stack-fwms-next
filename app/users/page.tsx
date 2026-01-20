@@ -6,7 +6,7 @@ import Navbar from "../component/navbar";
 import { getAllUsers, deleteUser } from "../../services/auth.api";
 
 type User = {
-  _id: string;
+  _id?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
                     <td className="px-4 py-3 capitalize">{u.role}</td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => handleDelete(u._id)}
+                        onClick={() => u._id && handleDelete(u._id)}
                         className="bg-gray-600 text-white px-3 py-1 rounded"
                       >
                         Delete

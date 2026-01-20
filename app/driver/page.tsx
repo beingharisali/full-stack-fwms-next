@@ -113,7 +113,7 @@ export default function DriversPage() {
             </button>
           </div>
 
-          {/* SEARCH & FILTER */}
+       
           <div className="flex flex-col md:flex-row gap-4 mb-5">
             <input
               type="text"
@@ -143,7 +143,7 @@ export default function DriversPage() {
             </select>
           </div>
 
-          {/* TABLE */}
+        
           {paginatedDrivers.length === 0 ? (
             <div className="bg-white p-10 rounded-md text-center text-gray-500 shadow">
               No drivers found
@@ -203,7 +203,7 @@ export default function DriversPage() {
             </div>
           )}
 
-          {/* PAGINATION */}
+         
           {totalPages > 1 && (
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
               <button
