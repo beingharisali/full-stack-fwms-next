@@ -88,6 +88,8 @@ export default function DriversPage() {
             </button>
           </div>
 
+       
+          <div className="flex flex-col md:flex-row gap-4 mb-5">
           {/* ERROR */}
           {error && (
             <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
@@ -123,6 +125,29 @@ export default function DriversPage() {
             </select>
           </div>
 
+        
+          {paginatedDrivers.length === 0 ? (
+            <div className="bg-white p-10 rounded-md text-center text-gray-500 shadow">
+              No drivers found
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[700px] text-sm">
+                  <thead className="bg-gray-800 text-white">
+                    <tr>
+                      <th className="p-3 text-left">Name</th>
+                      <th className="p-3 text-left">License No</th>
+                      <th className="p-3 text-left">License Type</th>
+                      <th className="p-3 text-left">Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {paginatedDrivers.map((d) => (
+                      <tr
+                        key={d._id}
+                        className="border-b last:border-b-0 hover:bg-gray-50 transition"
           {/* TABLE */}
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="w-full border border-black">
@@ -171,7 +196,7 @@ export default function DriversPage() {
             )}
           </div>
 
-          {/* PAGINATION */}
+         
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 gap-4">
               <button
