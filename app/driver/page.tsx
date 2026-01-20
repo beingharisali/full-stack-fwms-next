@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import Sidebar from "../component/sidebar";
 import Navbar from "../component/navbar";
 import LoadingBar from "../component/LoadingBar";
-
 import { getDrivers, deleteDriver } from "../../services/driver.api";
 import { Driver } from "@/types/driver";
 
@@ -19,120 +17,102 @@ export default function DriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  /* 🔍 FILTERS */
   const [search, setSearch] = useState("");
-  const [selectedLicenseType, setSelectedLicenseType] = useState("all");
+  const [licenseType, setLicenseType] = useState("all");
+
+  /* 📄 PAGINATION */
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const fetchDrivers = async () => {
-      try {
-        setLoading(true);
-        const res = await getDrivers();
-        setDrivers(res.drivers || []);
-        setError(null);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch drivers");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDrivers();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this driver?")) return;
-
+  const fetchDrivers = async () => {
     try {
-      await deleteDriver(id);
-      setDrivers((prev) => prev.filter((d) => d._id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Delete failed");
+      const res = await getDrivers();
+      setDrivers(res.drivers || []);
+    } catch {
+      setError("Failed to fetch drivers");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const licenseTypes = Array.from(
-    new Set(drivers.map((d) => d.licenseType))
-  );
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this driver?")) return;
+    await deleteDriver(id);
+    setDrivers((prev) => prev.filter((d) => d._id !== id));
+  };
 
+  /* 🔍 FILTERING */
   const filteredDrivers = drivers.filter((d) => {
-    const matchesLicense =
-      selectedLicenseType === "all"
-        ? true
-        : d.licenseType === selectedLicenseType;
-
     const matchesSearch =
       d.name.toLowerCase().includes(search.toLowerCase()) ||
       d.licenseNumber.toLowerCase().includes(search.toLowerCase());
 
-    return matchesLicense && matchesSearch;
+    const matchesLicense =
+      licenseType === "all" ? true : d.licenseType === licenseType;
+
+    return matchesSearch && matchesLicense;
   });
 
+  /* 📄 PAGINATION */
   const totalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+
   const paginatedDrivers = filteredDrivers.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
-  if (loading) {
-    return <LoadingBar title="Loading Drivers" duration={2} />;
-  }
+  const licenseTypes = Array.from(new Set(drivers.map((d) => d.licenseType)));
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-        <div className="flex-1">
-          <Navbar />
-          <p className="p-10 text-red-500">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingBar title="Loading Drivers" duration={2} />;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+    <div className="flex min-h-screen bg-white text-black flex-col">
+      <Navbar />
 
-      <div className="flex-1 flex flex-col">
-        <Navbar />
+      <div className="flex flex-1">
+        <Sidebar />
 
-        <main className="flex-1 p-4 md:p-8">
+        <div className="flex-1 p-8">
           {/* HEADER */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <h1 className="text-2xl font-bold text-black">Drivers</h1>
-
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-3xl font-bold">Drivers</h1>
             <button
               onClick={() => router.push("/driver/create")}
-              className="bg-gray-800 text-white px-5 py-2 rounded-md hover:bg-gray-900 transition"
+              className="bg-black text-white px-4 py-2 rounded"
             >
               Create Driver
             </button>
           </div>
 
-          {/* SEARCH & FILTER */}
-          <div className="flex flex-col md:flex-row gap-4 mb-5">
+          {/* ERROR */}
+          {error && (
+            <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          {/* FILTER BAR */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <input
-              type="text"
               placeholder="Search by name or license number..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full md:w-96 border border-gray-300 rounded-md px-3 py-2 text-black"
+              className="flex-1 border px-3 py-2 rounded"
             />
-
             <select
-              value={selectedLicenseType}
+              value={licenseType}
               onChange={(e) => {
-                setSelectedLicenseType(e.target.value);
+                setLicenseType(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full md:w-60 border border-gray-300 rounded-md px-3 py-2 text-black"
+              className="border px-3 py-2 rounded"
             >
               <option value="all">All License Types</option>
               {licenseTypes.map((type) => (
@@ -144,90 +124,88 @@ export default function DriversPage() {
           </div>
 
           {/* TABLE */}
-          {paginatedDrivers.length === 0 ? (
-            <div className="bg-white p-10 rounded-md text-center text-gray-500 shadow">
-              No drivers found
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px] text-sm">
-                  <thead className="bg-gray-800 text-white">
-                    <tr>
-                      <th className="p-3 text-left">Name</th>
-                      <th className="p-3 text-left">License No</th>
-                      <th className="p-3 text-left">License Type</th>
-                      <th className="p-3 text-left">Actions</th>
-                    </tr>
-                  </thead>
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full border border-black">
+              <thead className="bg-gray-200 border border-black">
+                <tr>
+                  <th className="px-4 py-3 border text-left">Name</th>
+                  <th className="px-4 py-3 border text-left">
+                    License Number
+                  </th>
+                  <th className="px-4 py-3 border text-left">
+                    License Type
+                  </th>
+                  <th className="px-4 py-3 border text-left">Actions</th>
+                </tr>
+              </thead>
 
-                  <tbody>
-                    {paginatedDrivers.map((d) => (
-                      <tr
-                        key={d._id}
-                        className="border-b last:border-b-0 hover:bg-gray-50 transition"
+              <tbody>
+                {paginatedDrivers.map((d) => (
+                  <tr key={d._id} className="border border-black">
+                    <td className="px-4 py-3">{d.name}</td>
+                    <td className="px-4 py-3">{d.licenseNumber}</td>
+                    <td className="px-4 py-3">{d.licenseType}</td>
+                    <td className="px-4 py-3 space-x-2">
+                      <button
+                        onClick={() => router.push(`/driver/update/${d._id}`)}
+                        className="bg-black text-white px-3 py-1 rounded"
                       >
-                        <td className="p-3 text-black whitespace-nowrap">
-                          {d.name}
-                        </td>
-                        <td className="p-3 text-black whitespace-nowrap">
-                          {d.licenseNumber}
-                        </td>
-                        <td className="p-3 text-black whitespace-nowrap">
-                          {d.licenseType}
-                        </td>
-                        <td className="p-3">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={() =>
-                                router.push(`/driver/update/${d._id}`)
-                              }
-                              className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"
-                            >
-                              Edit
-                            </button>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(d._id)}
+                        className="bg-gray-600 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-                            <button
-                              onClick={() => handleDelete(d._id)}
-                              className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {filteredDrivers.length === 0 && (
+              <div className="text-center py-6 text-gray-500">
+                No drivers found.
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* PAGINATION */}
           {totalPages > 1 && (
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 gap-4">
               <button
-                disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-4 py-1 border border-gray-400 rounded text-black disabled:opacity-50"
+                disabled={currentPage === 1}
+                className="px-4 py-1 border rounded disabled:opacity-50"
               >
-                Previous
+                Prev
               </button>
 
-              <span className="text-black">
-                Page {currentPage} of {totalPages}
-              </span>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={`px-3 py-1 border rounded ${
+                      p === currentPage ? "bg-black text-white" : ""
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
 
               <button
-                disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-4 py-1 border border-gray-400 rounded text-black disabled:opacity-50"
+                disabled={currentPage === totalPages}
+                className="px-4 py-1 border rounded disabled:opacity-50"
               >
                 Next
               </button>
             </div>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );
