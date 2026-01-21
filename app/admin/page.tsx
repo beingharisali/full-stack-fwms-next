@@ -174,7 +174,6 @@ export default function AdminPage() {
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
   
-  {/* Total Drivers */}
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -187,7 +186,6 @@ export default function AdminPage() {
     <p className="text-2xl font-bold mt-2">{drivers.length}</p>
   </motion.div>
 
-  {/* Total Vehicles */}
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -200,7 +198,6 @@ export default function AdminPage() {
     <p className="text-2xl font-bold mt-2">{vehicles.length}</p>
   </motion.div>
 
-  {/* Available Vehicles */}
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -213,7 +210,6 @@ export default function AdminPage() {
     <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
   </motion.div>
 
-  {/* Total Trips */}
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
