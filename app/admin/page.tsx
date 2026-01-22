@@ -71,7 +71,7 @@ export default function AdminPage() {
     }
   };
 
- 
+  /* ✅ VEHICLES CHART – FIXED */
   useEffect(() => {
     if (!vehicles.length) {
       setVehicleChartData([]);
@@ -158,18 +158,6 @@ export default function AdminPage() {
         <Sidebar />
 
         <main className="p-8 flex-1">
-        
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold">Total Drivers</h3>
-              <p className="text-2xl font-bold">{drivers.length}</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold">Total Vehicles</h3>
-              <p className="text-2xl font-bold">{vehicles.length}</p>
-            </div>
-          {/* STATS */}
           
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -225,7 +213,6 @@ export default function AdminPage() {
 </div>
 
 
-         
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
             <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
               <h3 className="text-lg font-semibold mb-4">
