@@ -135,7 +135,7 @@ export default function TripsPage() {
             </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <div className="bg-white shadow overflow-x-auto">
             <table className="w-full border border-black">
               <thead className="bg-gray-200 border border-black">
                 <tr>
