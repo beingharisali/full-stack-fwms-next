@@ -186,17 +186,18 @@ export default function AdminPage() {
     <p className="text-2xl font-bold mt-2">{vehicles.length}</p>
   </motion.div>
 
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    whileHover={{ scale: 1.05 }}
-    transition={{ duration: 0.3 }}
-    className="relative bg-white rounded-lg shadow-md p-6 border-l-4 border-black hover:shadow-lg"
-  >
-    <CheckCircle className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
-    <h3 className="text-lg font-semibold">Available Vehicles</h3>
-    <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
-  </motion.div>
+ <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  whileHover={{ scale: 1.05 }}
+  transition={{ duration: 0.3 }}
+  className="relative bg-white rounded-lg shadow-md p-6 pr-12 border-l-4 border-black hover:shadow-lg"
+>
+  <CheckCircle className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+  <h3 className="text-lg font-semibold">Available Vehicles</h3>
+  <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
+</motion.div>
+
 
   <motion.div
     initial={{ opacity: 0, y: 20 }}
