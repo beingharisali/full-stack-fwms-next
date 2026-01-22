@@ -80,7 +80,7 @@ export default function ManagerPage() {
     setDriverPage(1);
   };
 
-  // --- Trips sorting & pagination ---
+  
   const sortedTrips = useMemo(() => {
     if (tripSort === "time")
       return [...trips].sort((a, b) =>
@@ -96,7 +96,7 @@ export default function ManagerPage() {
     return sortedTrips.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedTrips, tripPage]);
 
-  // --- Drivers filtering, sorting & pagination ---
+  
   const filteredDrivers = useMemo(() => {
     let list = Array.isArray(drivers) ? [...drivers] : [];
     if (driverLicenseFilter !== "all") {
@@ -113,7 +113,7 @@ export default function ManagerPage() {
     return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredDrivers, driverPage]);
 
-  // --- Page loading ---
+  
   if (pageLoading) {
     return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
@@ -196,7 +196,7 @@ export default function ManagerPage() {
           </div>
         )}
 
-        {/* DRIVERS TABLE */}
+        
         {view === "drivers" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">

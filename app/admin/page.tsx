@@ -71,7 +71,7 @@ export default function AdminPage() {
     }
   };
 
-  /* ✅ VEHICLES CHART – FIXED */
+  
   useEffect(() => {
     if (!vehicles.length) {
       setVehicleChartData([]);

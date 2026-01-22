@@ -24,11 +24,11 @@ export default function DriverPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(false);
-  const [view, setView] = useState<"none" | "trips">("trips"); // default view
+  const [view, setView] = useState<"none" | "trips">("trips"); 
 
   const [tripPage, setTripPage] = useState(1);
 
-  // --- Auth & initial data fetch ---
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -70,7 +70,7 @@ export default function DriverPage() {
     setView(type);
   };
 
-  // --- Pagination ---
+  
   const paginatedTrips = useMemo(() => {
     const start = (tripPage - 1) * ITEMS_PER_PAGE;
     return trips.slice(start, start + ITEMS_PER_PAGE);
@@ -89,7 +89,7 @@ export default function DriverPage() {
       <DriverNavbar setView={handleView} currentView={view} />
 
       <main className="p-8 space-y-10">
-        {/* STATS */}
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-bold text-black">Total Trips</h3>
@@ -107,7 +107,7 @@ export default function DriverPage() {
           </div>
         </div>
 
-        {/* TRIPS TABLE */}
+        
         {view === "trips" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -164,7 +164,7 @@ export default function DriverPage() {
               </tbody>
             </table>
 
-            {/* Pagination */}
+            
             <div className="flex justify-between items-center p-4">
               <button
                 disabled={tripPage === 1}
