@@ -31,7 +31,7 @@ export default function ManagerPage() {
   const [tripPage, setTripPage] = useState(1);
   const [driverPage, setDriverPage] = useState(1);
 
-  // ---------- AUTH + INITIAL FETCH ----------
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -56,7 +56,7 @@ export default function ManagerPage() {
     init();
   }, []);
 
-  // ---------- API CALLS ----------
+  
   const fetchTrips = async () => {
     try {
       setLoadingTrips(true);
@@ -81,14 +81,14 @@ export default function ManagerPage() {
     }
   };
 
-  // ---------- VIEW ----------
+ 
   const handleView = (type: ViewType) => {
     setView(type);
     setTripPage(1);
     setDriverPage(1);
   };
 
-  // ---------- TRIPS ----------
+ 
   const sortedTrips = useMemo(() => {
     if (tripSort === "time") {
       return [...trips].sort((a, b) =>
@@ -110,7 +110,7 @@ export default function ManagerPage() {
 
   const totalTripPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE);
 
-  // ---------- DRIVERS ----------
+  
   const filteredDrivers = useMemo(() => {
     let list = [...drivers];
 
@@ -134,7 +134,7 @@ export default function ManagerPage() {
     filteredDrivers.length / ITEMS_PER_PAGE
   );
 
-  // ---------- LOADING ----------
+
   if (pageLoading) {
     return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
@@ -144,7 +144,7 @@ export default function ManagerPage() {
       <Navbar setView={handleView} currentView={view} />
 
       <main className="p-8 space-y-10">
-        {/* STATS */}
+       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-bold">Total Trips</h3>
@@ -156,7 +156,7 @@ export default function ManagerPage() {
           </div>
         </div>
 
-        {/* ---------- TRIPS ---------- */}
+       
         {view === "trips" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -197,7 +197,7 @@ export default function ManagerPage() {
               </tbody>
             </table>
 
-            {/* TRIP PAGINATION */}
+            
             <div className="flex justify-center gap-4 py-4">
               <button
                 disabled={tripPage === 1}
@@ -220,7 +220,7 @@ export default function ManagerPage() {
           </div>
         )}
 
-        {/* ---------- DRIVERS ---------- */}
+        
         {view === "drivers" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -278,7 +278,7 @@ export default function ManagerPage() {
               </tbody>
             </table>
 
-            {/* DRIVER PAGINATION */}
+           
             <div className="flex justify-center gap-4 py-4">
               <button
                 disabled={driverPage === 1}
