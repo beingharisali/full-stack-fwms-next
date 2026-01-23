@@ -173,7 +173,7 @@ export default function ManagerPage() {
             </div>
 
             <table className="w-full">
-              <thead className="bg-slate-800 text-white">
+              <thead className="bg-slate-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Departure</th>
                   <th className="px-4 py-3 text-left">Date</th>
