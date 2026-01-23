@@ -24,10 +24,12 @@ const item = {
 
 export default function LoginPage() {
 	const router = useRouter();
+
 	const [form, setForm] = useState<LoginForm>({
 		email: "",
 		password: "",
 	});
+
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
@@ -40,11 +42,26 @@ export default function LoginPage() {
 		e.preventDefault();
 		setError("");
 		setLoading(true);
+
 		try {
 			const res = await login(form.email, form.password);
+
+			
 			localStorage.setItem("token", res.token);
 			document.cookie = `token=${res.token}; path=/; max-age=86400`;
-			router.push("/admin"); // You can customize this based on user role
+
+			
+			const role = res.user.role;
+			localStorage.setItem("role", role);
+
+			
+			if (role === "driver") {
+				router.push("/dashboard/driver");
+			} else if (role === "manager") {
+				router.push("/manager");
+			} else {
+				router.push("/admin");
+			}
 		} catch (err: any) {
 			setError(err.response?.data?.msg || "Login failed");
 		} finally {
@@ -53,10 +70,12 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center px-4
-        bg-gradient-to-br from-slate-200 via-gray-300 to-slate-400
-        relative overflow-hidden">
-			{/* Background glows */}
+		<div
+			className="min-h-screen flex items-center justify-center px-4
+      bg-gradient-to-br from-slate-200 via-gray-300 to-slate-400
+      relative overflow-hidden"
+		>
+		
 			<div className="absolute -top-32 -left-32 w-96 h-96 bg-gray-400/30 rounded-full blur-3xl" />
 			<div className="absolute -bottom-32 -right-32 w-96 h-96 bg-gray-500/30 rounded-full blur-3xl" />
 
@@ -92,7 +111,7 @@ export default function LoginPage() {
 						value={form.email}
 						onChange={handleChange}
 						required
-						className="bg-gray-50 border border-gray-300 rounded-lg p-3 w-full text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500 transition"
+						className="bg-gray-50 border border-gray-300 rounded-lg p-3 w-full text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400"
 					/>
 
 					<motion.input
@@ -103,7 +122,7 @@ export default function LoginPage() {
 						value={form.password}
 						onChange={handleChange}
 						required
-						className="bg-gray-50 border border-gray-300 rounded-lg p-3 w-full text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-500 transition"
+						className="bg-gray-50 border border-gray-300 rounded-lg p-3 w-full text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400"
 					/>
 
 					<motion.button
