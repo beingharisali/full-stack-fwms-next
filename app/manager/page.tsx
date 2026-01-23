@@ -81,14 +81,14 @@ export default function ManagerPage() {
     }
   };
 
-  // ---------- VIEW HANDLER ----------
+  // ---------- VIEW ----------
   const handleView = (type: ViewType) => {
     setView(type);
     setTripPage(1);
     setDriverPage(1);
   };
 
-  // ---------- TRIPS LOGIC ----------
+  // ---------- TRIPS ----------
   const sortedTrips = useMemo(() => {
     if (tripSort === "time") {
       return [...trips].sort((a, b) =>
@@ -108,15 +108,20 @@ export default function ManagerPage() {
     return sortedTrips.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedTrips, tripPage]);
 
-  // ---------- DRIVERS LOGIC ----------
+  const totalTripPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE);
+
+  // ---------- DRIVERS ----------
   const filteredDrivers = useMemo(() => {
     let list = [...drivers];
+
     if (driverLicenseFilter !== "all") {
       list = list.filter(d => d.licenseType === driverLicenseFilter);
     }
+
     if (driverSort === "name") {
       list.sort((a, b) => a.name.localeCompare(b.name));
     }
+
     return list;
   }, [drivers, driverLicenseFilter, driverSort]);
 
@@ -125,12 +130,15 @@ export default function ManagerPage() {
     return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredDrivers, driverPage]);
 
+  const totalDriverPages = Math.ceil(
+    filteredDrivers.length / ITEMS_PER_PAGE
+  );
+
   // ---------- LOADING ----------
   if (pageLoading) {
     return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
 
-  // ---------- UI ----------
   return (
     <div className="min-h-screen bg-gray-100 text-black">
       <Navbar setView={handleView} currentView={view} />
@@ -160,7 +168,7 @@ export default function ManagerPage() {
               >
                 <option value="none">Normal</option>
                 <option value="time">Early Departure</option>
-                <option value="name">Destination (A–Z)</option>
+                <option value="name">Destination (A-Z)</option>
               </select>
             </div>
 
@@ -181,11 +189,34 @@ export default function ManagerPage() {
                       {new Date(trip.date).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">{trip.destination}</td>
-                    <td className="px-4 py-3">{trip.departureTime || "-"}</td>
+                    <td className="px-4 py-3">
+                      {trip.departureTime || "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* TRIP PAGINATION */}
+            <div className="flex justify-center gap-4 py-4">
+              <button
+                disabled={tripPage === 1}
+                onClick={() => setTripPage(p => p - 1)}
+                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span>
+                Page {tripPage} of {totalTripPages}
+              </span>
+              <button
+                disabled={tripPage === totalTripPages}
+                onClick={() => setTripPage(p => p + 1)}
+                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
 
@@ -194,6 +225,7 @@ export default function ManagerPage() {
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
               <h2 className="text-lg font-semibold">Drivers</h2>
+
               <div className="flex gap-3">
                 <select
                   value={driverLicenseFilter}
@@ -218,13 +250,13 @@ export default function ManagerPage() {
                   className="bg-white text-black px-3 py-1 rounded"
                 >
                   <option value="none">Normal</option>
-                  <option value="name">Name (A–Z)</option>
+                  <option value="name">Name (A-Z)</option>
                 </select>
               </div>
             </div>
 
             <table className="w-full">
-              <thead className="bg-slate-800 text-white">
+              <thead className="bg-slate-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
                   <th className="px-4 py-3 text-left">License No</th>
@@ -235,12 +267,37 @@ export default function ManagerPage() {
                 {paginatedDrivers.map(driver => (
                   <tr key={driver._id} className="border-b hover:bg-gray-100">
                     <td className="px-4 py-3">{driver.name}</td>
-                    <td className="px-4 py-3">{driver.licenseNumber}</td>
-                    <td className="px-4 py-3">{driver.licenseType}</td>
+                    <td className="px-4 py-3">
+                      {driver.licenseNumber}
+                    </td>
+                    <td className="px-4 py-3">
+                      {driver.licenseType}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* DRIVER PAGINATION */}
+            <div className="flex justify-center gap-4 py-4">
+              <button
+                disabled={driverPage === 1}
+                onClick={() => setDriverPage(p => p - 1)}
+                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span>
+                Page {driverPage} of {totalDriverPages}
+              </span>
+              <button
+                disabled={driverPage === totalDriverPages}
+                onClick={() => setDriverPage(p => p + 1)}
+                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </main>
