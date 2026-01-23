@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "../manager/component/navbar";
+import Navbar from "./component/navbar";
 import LoadingBar from "../component/LoadingBar";
 import { getTrips } from "@/services/trip.api";
 import { getDrivers } from "@/services/driver.api";
@@ -10,13 +10,17 @@ import { Trip } from "@/types/trip";
 
 const ITEMS_PER_PAGE = 5;
 
+type ViewType = "none" | "trips" | "drivers";
+
 export default function ManagerPage() {
   const router = useRouter();
+
   const [user, setUser] = useState<any>(null);
-  const [view, setView] = useState<"none" | "trips" | "drivers">("trips");
+  const [view, setView] = useState<ViewType>("trips");
 
   const [trips, setTrips] = useState<Trip[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
+
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(false);
 
@@ -27,29 +31,32 @@ export default function ManagerPage() {
   const [tripPage, setTripPage] = useState(1);
   const [driverPage, setDriverPage] = useState(1);
 
-  // --- Auth & initial data fetch ---
+  // ---------- AUTH + INITIAL FETCH ----------
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return router.push("/");
+    if (!token) {
+      router.push("/");
+      return;
+    }
 
     try {
       setUser(JSON.parse(atob(token.split(".")[1])));
     } catch {
       localStorage.removeItem("token");
-      return router.push("/");
+      router.push("/");
+      return;
     }
-
-    const delay = (ms: number) =>
-      new Promise(resolve => setTimeout(resolve, ms));
 
     const init = async () => {
       setPageLoading(true);
-      await Promise.all([fetchTrips(), fetchDrivers(), delay(1000)]);
+      await Promise.all([fetchTrips(), fetchDrivers()]);
       setPageLoading(false);
     };
+
     init();
   }, []);
 
+  // ---------- API CALLS ----------
   const fetchTrips = async () => {
     try {
       setLoadingTrips(true);
@@ -63,31 +70,36 @@ export default function ManagerPage() {
   const fetchDrivers = async () => {
     try {
       const res: any = await getDrivers();
-      const driverList = Array.isArray(res)
+      const list = Array.isArray(res)
         ? res
         : Array.isArray(res?.drivers)
         ? res.drivers
         : [];
-      setDrivers(driverList);
+      setDrivers(list);
     } catch {
       setDrivers([]);
     }
   };
 
-  const handleView = (type: "none" | "trips" | "drivers") => {
+  // ---------- VIEW HANDLER ----------
+  const handleView = (type: ViewType) => {
     setView(type);
     setTripPage(1);
     setDriverPage(1);
   };
 
-  
+  // ---------- TRIPS LOGIC ----------
   const sortedTrips = useMemo(() => {
-    if (tripSort === "time")
+    if (tripSort === "time") {
       return [...trips].sort((a, b) =>
         (a.departureTime || "").localeCompare(b.departureTime || "")
       );
-    if (tripSort === "name")
-      return [...trips].sort((a, b) => a.destination.localeCompare(b.destination));
+    }
+    if (tripSort === "name") {
+      return [...trips].sort((a, b) =>
+        a.destination.localeCompare(b.destination)
+      );
+    }
     return trips;
   }, [trips, tripSort]);
 
@@ -96,9 +108,9 @@ export default function ManagerPage() {
     return sortedTrips.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedTrips, tripPage]);
 
-  
+  // ---------- DRIVERS LOGIC ----------
   const filteredDrivers = useMemo(() => {
-    let list = Array.isArray(drivers) ? [...drivers] : [];
+    let list = [...drivers];
     if (driverLicenseFilter !== "all") {
       list = list.filter(d => d.licenseType === driverLicenseFilter);
     }
@@ -113,11 +125,12 @@ export default function ManagerPage() {
     return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredDrivers, driverPage]);
 
-  
+  // ---------- LOADING ----------
   if (pageLoading) {
     return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
   }
 
+  // ---------- UI ----------
   return (
     <div className="min-h-screen bg-gray-100 text-black">
       <Navbar setView={handleView} currentView={view} />
@@ -126,16 +139,16 @@ export default function ManagerPage() {
         {/* STATS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-bold text-black">Total Trips</h3>
-            <p className="text-3xl font-medium">{trips.length}</p>
+            <h3 className="text-lg font-bold">Total Trips</h3>
+            <p className="text-3xl">{trips.length}</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-bold text-black">Total Drivers</h3>
-            <p className="text-3xl font-medium">{drivers.length}</p>
+            <h3 className="text-lg font-bold">Total Drivers</h3>
+            <p className="text-3xl">{drivers.length}</p>
           </div>
         </div>
 
-        {/* TRIPS TABLE */}
+        {/* ---------- TRIPS ---------- */}
         {view === "trips" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -145,7 +158,7 @@ export default function ManagerPage() {
                 onChange={e => setTripSort(e.target.value as any)}
                 className="bg-white text-black px-3 py-1 rounded"
               >
-                <option value="none">Normal Order</option>
+                <option value="none">Normal</option>
                 <option value="time">Early Departure</option>
                 <option value="name">Destination (A–Z)</option>
               </select>
@@ -160,7 +173,6 @@ export default function ManagerPage() {
                   <th className="px-4 py-3 text-left">Time</th>
                 </tr>
               </thead>
-
               <tbody>
                 {paginatedTrips.map(trip => (
                   <tr key={trip._id} className="border-b hover:bg-gray-100">
@@ -174,29 +186,10 @@ export default function ManagerPage() {
                 ))}
               </tbody>
             </table>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center p-4">
-              <button
-                disabled={tripPage === 1}
-                onClick={() => setTripPage(p => p - 1)}
-                className="px-4 py-2 bg-slate-900 text-white rounded disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <span className="text-sm">Page {tripPage}</span>
-              <button
-                disabled={tripPage * ITEMS_PER_PAGE >= trips.length}
-                onClick={() => setTripPage(p => p + 1)}
-                className="px-4 py-2 bg-slate-900 text-white rounded"
-              >
-                Next
-              </button>
-            </div>
           </div>
         )}
 
-        
+        {/* ---------- DRIVERS ---------- */}
         {view === "drivers" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -238,7 +231,6 @@ export default function ManagerPage() {
                   <th className="px-4 py-3 text-left">License Type</th>
                 </tr>
               </thead>
-
               <tbody>
                 {paginatedDrivers.map(driver => (
                   <tr key={driver._id} className="border-b hover:bg-gray-100">
@@ -249,29 +241,6 @@ export default function ManagerPage() {
                 ))}
               </tbody>
             </table>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center p-4">
-              <button
-                disabled={driverPage === 1}
-                onClick={() => setDriverPage(p => p - 1)}
-                className="px-4 py-2 bg-slate-900 text-white rounded disabled:opacity-40"
-              >
-                Previous
-              </button>
-
-              <span className="text-sm">
-                Page {driverPage} of {Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE)}
-              </span>
-
-              <button
-                disabled={driverPage * ITEMS_PER_PAGE >= filteredDrivers.length}
-                onClick={() => setDriverPage(p => p + 1)}
-                className="px-4 py-2 bg-slate-900 text-white rounded"
-              >
-                Next
-              </button>
-            </div>
           </div>
         )}
       </main>
