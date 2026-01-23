@@ -8,14 +8,6 @@ import { getTrips } from "@/services/trip.api";
 import LoadingBar from "../../component/LoadingBar";
 import { Trip } from "@/types/trip";
 
-// interface Trip {
-//   _id: number;
-//   status: "Pending" | "Ongoing" | "Completed";
-//   pickup: string;
-//   drop: string;
-//   createdAt: string;
-// }
-
 const ITEMS_PER_PAGE = 5;
 
 export default function DriverPage() {
@@ -24,11 +16,9 @@ export default function DriverPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [loadingTrips, setLoadingTrips] = useState(false);
-  const [view, setView] = useState<"none" | "trips">("trips"); 
-
+  const [view, setView] = useState<"none" | "trips">("trips");
   const [tripPage, setTripPage] = useState(1);
 
-  
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -55,7 +45,7 @@ export default function DriverPage() {
     try {
       setLoadingTrips(true);
       const data = await getTrips();
-      console.log('data', data)
+      console.log("data", data);
       setTrips(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -70,7 +60,6 @@ export default function DriverPage() {
     setView(type);
   };
 
-  
   const paginatedTrips = useMemo(() => {
     const start = (tripPage - 1) * ITEMS_PER_PAGE;
     return trips.slice(start, start + ITEMS_PER_PAGE);
@@ -89,7 +78,6 @@ export default function DriverPage() {
       <DriverNavbar setView={handleView} currentView={view} />
 
       <main className="p-8 space-y-10">
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-bold text-black">Total Trips</h3>
@@ -98,16 +86,19 @@ export default function DriverPage() {
 
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-bold text-black">Ongoing Trips</h3>
-            <p className="text-3xl font-medium text-blue-600">{ongoingTrips}</p>
+            <p className="text-3xl font-medium text-blue-600">
+              {ongoingTrips}
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-bold text-black">Completed Trips</h3>
-            <p className="text-3xl font-medium text-green-600">{completedTrips}</p>
+            <p className="text-3xl font-medium text-green-600">
+              {completedTrips}
+            </p>
           </div>
         </div>
 
-        
         {view === "trips" && (
           <div className="bg-white rounded-xl shadow">
             <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
@@ -115,12 +106,10 @@ export default function DriverPage() {
             </div>
 
             <table className="w-full">
-              <thead className="bg-slate-800 text-white">
+              <thead className="bg-slate-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Trip ID</th>
                   <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-left">Pickup</th>
-                  <th className="px-4 py-3 text-left">Drop</th>
                   <th className="px-4 py-3 text-left">Created</th>
                 </tr>
               </thead>
@@ -128,19 +117,22 @@ export default function DriverPage() {
               <tbody>
                 {loadingTrips ? (
                   <tr>
-                    <td colSpan={5} className="p-6 text-center text-gray-600">
+                    <td colSpan={3} className="p-6 text-center text-gray-600">
                       Loading trips...
                     </td>
                   </tr>
                 ) : paginatedTrips.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-6 text-center text-gray-600">
+                    <td colSpan={3} className="p-6 text-center text-gray-600">
                       No trips assigned by admin
                     </td>
                   </tr>
                 ) : (
                   paginatedTrips.map(trip => (
-                    <tr key={trip._id} className="border-b hover:bg-gray-100">
+                    <tr
+                      key={trip._id}
+                      className="border-b hover:bg-gray-100"
+                    >
                       <td className="px-4 py-3">#{trip._id}</td>
                       <td className="px-4 py-3">
                         <span
@@ -155,16 +147,15 @@ export default function DriverPage() {
                           {trip.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{trip.pickup}</td>
-                      <td className="px-4 py-3">{trip.drop}</td>
-                      <td className="px-4 py-3">{new Date(trip.createdAt).toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        {new Date(trip.createdAt).toLocaleString()}
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
 
-            
             <div className="flex justify-between items-center p-4">
               <button
                 disabled={tripPage === 1}
@@ -173,9 +164,12 @@ export default function DriverPage() {
               >
                 Previous
               </button>
+
               <span className="text-sm">
-                Page {tripPage} of {Math.ceil(trips.length / ITEMS_PER_PAGE)}
+                Page {tripPage} of{" "}
+                {Math.ceil(trips.length / ITEMS_PER_PAGE)}
               </span>
+
               <button
                 disabled={tripPage * ITEMS_PER_PAGE >= trips.length}
                 onClick={() => setTripPage(p => p + 1)}
