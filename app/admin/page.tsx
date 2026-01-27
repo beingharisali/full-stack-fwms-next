@@ -32,23 +32,35 @@ export default function AdminPage() {
 
   const [loading, setLoading] = useState(true);
 
+  /* ========= SECURITY (UI KO TOUCH NAHI KIYA) ========= */
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/");
+      router.replace("/");
       return;
     }
 
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
+
+      const now = Date.now() / 1000;
+      if (payload.exp < now) {
+        localStorage.removeItem("token");
+        router.replace("/");
+        return;
+      }
+
+      if (payload.role !== "admin") {
+        router.replace("/unauthorized");
+        return;
+      }
+
       setUser(payload);
+      fetchDashboardData();
     } catch {
       localStorage.removeItem("token");
-      router.push("/");
-      return;
+      router.replace("/");
     }
-
-    fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -71,7 +83,7 @@ export default function AdminPage() {
     }
   };
 
-  
+  /* ========= VEHICLES CHART ========= */
   useEffect(() => {
     if (!vehicles.length) {
       setVehicleChartData([]);
@@ -158,7 +170,8 @@ export default function AdminPage() {
         <Sidebar />
 
         <main className="p-8 flex-1">
-          
+
+{/* ================= CARDS (EXACT SAME AS YOURS) ================= */}
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
   
@@ -186,18 +199,17 @@ export default function AdminPage() {
     <p className="text-2xl font-bold mt-2">{vehicles.length}</p>
   </motion.div>
 
- <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  whileHover={{ scale: 1.05 }}
-  transition={{ duration: 0.3 }}
-  className="relative bg-white rounded-lg shadow-md p-6 pr-12 border-l-4 border-black hover:shadow-lg"
->
-  <CheckCircle className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
-  <h3 className="text-lg font-semibold">Available Vehicles</h3>
-  <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
-</motion.div>
-
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.3 }}
+    className="relative bg-white rounded-lg shadow-md p-6 pr-12 border-l-4 border-black hover:shadow-lg"
+  >
+    <CheckCircle className="absolute right-4 top-4 w-8 h-8 text-gray-300" />
+    <h3 className="text-lg font-semibold">Available Vehicles</h3>
+    <p className="text-2xl font-bold mt-2">{availableVehicles}</p>
+  </motion.div>
 
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -213,36 +225,31 @@ export default function AdminPage() {
 
 </div>
 
+{/* ================= CHARTS ================= */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-            <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
-              <h3 className="text-lg font-semibold mb-4">
-                Vehicles Overview
-              </h3>
-              <VehicleChart data={vehicleChartData} />
-            </div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+  <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
+    <h3 className="text-lg font-semibold mb-4">Vehicles Overview</h3>
+    <VehicleChart data={vehicleChartData} />
+  </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
-              <h3 className="text-lg font-semibold mb-4">
-                Drivers Overview
-              </h3>
-              <DriversChart data={driversChartData} />
-            </div>
+  <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
+    <h3 className="text-lg font-semibold mb-4">Drivers Overview</h3>
+    <DriversChart data={driversChartData} />
+  </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
-              <h3 className="text-lg font-semibold mb-4">
-                Trips Overview
-              </h3>
+  <div className="bg-white rounded-lg shadow-md p-6 transition hover:bg-gray-50">
+    <h3 className="text-lg font-semibold mb-4">Trips Overview</h3>
+    {tripsChartData.length > 0 ? (
+      <TripsChart data={tripsChartData} />
+    ) : (
+      <p className="text-sm text-gray-500 text-center">
+        No trip data available
+      </p>
+    )}
+  </div>
+</div>
 
-              {tripsChartData.length > 0 ? (
-                <TripsChart data={tripsChartData} />
-              ) : (
-                <p className="text-sm text-gray-500 text-center">
-                  No trip data available
-                </p>
-              )}
-            </div>
-          </div>
         </main>
       </div>
     </div>
