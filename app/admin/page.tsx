@@ -85,32 +85,38 @@ export default function AdminPage() {
 
   /* ========= VEHICLES CHART ========= */
   useEffect(() => {
-    if (!vehicles.length) {
-      setVehicleChartData([]);
-      return;
-    }
+    if (!vehicles.length) {
+      setVehicleChartData([]);
+      return;
+    }
 
     setVehicleChartData([
+      {
+        name: "Available",
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "available"
+        ).length,
+      },
+      {
+        name: "In-Use", // Pehle unavailable tha, ab aapke original data ke mutabiq hai
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "in-use"
+        ).length,
+      },
+      {
+        name: "Inactive", // Ye red line ke liye important hai
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "inactive"
+        ).length,
+      },
       {
-        name: "Available",
-        value: vehicles.filter(
-          v => v.status?.toLowerCase() === "available"
-        ).length,
-      },
-      {
-        name: "Unavailable",
-        value: vehicles.filter(
-          v => v.status?.toLowerCase() === "unavailable"
-        ).length,
-      },
-      {
-        name: "Maintenance",
-        value: vehicles.filter(
-          v => v.status?.toLowerCase() === "maintenance"
-        ).length,
-      },
-    ]);
-  }, [vehicles]);
+        name: "Maintenance",
+        value: vehicles.filter(
+          v => v.status?.toLowerCase() === "maintenance"
+        ).length,
+      },
+    ]);
+  }, [vehicles]);
 
   useEffect(() => {
     if (!drivers.length) return;
