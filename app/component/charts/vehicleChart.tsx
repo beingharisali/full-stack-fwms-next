@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = ["#22C55E", "#F97316", "#EF4444"];
+const COLORS = ["#10B981", "#F97316", "#EF4444"];
 
 export default function VehicleChart({ data }: any) {
   const filteredData = data.filter((d: any) => d.value > 0);

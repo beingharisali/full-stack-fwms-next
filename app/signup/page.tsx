@@ -141,15 +141,18 @@ export default function SignupPage() {
 					))}
 
 					<motion.select
-						variants={item}
-						{...register("role")}
-						className="bg-gray-50 border border-gray-300 rounded-lg p-3 text-gray-700"
-					>
-						<option value="driver">Driver</option>
-						<option value="manager">Manager</option>
-						<option value="admin">Admin</option>
-					</motion.select>
+	variants={item}
+	{...register("role")}
+	defaultValue=""
+	className="bg-gray-50 border border-gray-300 rounded-lg p-3 text-gray-700"
+>
+	<option value="" disabled >
+		Select role
+	</option>
 
+	<option value="manager">Manager</option>
+	<option value="admin">Admin</option>
+</motion.select>
 					<motion.button
 						variants={item}
 						whileHover={{ scale: 1.03 }}
