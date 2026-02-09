@@ -53,7 +53,7 @@ export default function VehiclePage() {
       | "Available"
       | "In-Use"
       | "Maintenance"
-      | "Inactive",
+      | "Inactive",   
   });
 
   const [search, setSearch] = useState("");
