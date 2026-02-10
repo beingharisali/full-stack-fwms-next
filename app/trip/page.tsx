@@ -171,16 +171,16 @@ export default function TripsPage() {
 
               <tbody>
                 {paginatedTrips.map((trip) => (
-                  <tr key={trip._id} className="border-b border-gray-200">
+                  <tr key={trip._id} className="border-b border-black">
                     <td className="px-6 py-4 text-sm">{trip.departure}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-black">
                       {new Date(trip.date).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-sm">{trip.destination}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-black">
                       {trip.departureTime || "—"}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-black">
                       {trip.arrivalTime || "—"}
                     </td>
 
