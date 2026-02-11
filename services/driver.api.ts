@@ -92,7 +92,7 @@ export const createDriver = async (data: {
         if (axios.isAxiosError(err)) {
             // Priority: Backend Msg -> Backend Error -> Axios Message
             const serverMsg = err.response?.data?.msg || err.response?.data?.error || err.message;
-            console.error("Create Driver Error:", serverMsg);
+            console.log("Create Driver Error:", serverMsg);
         } else {
             console.error("Unexpected Create Driver Error:", err);
         }
