@@ -6,6 +6,8 @@ import { createDriver } from "../../../services/driver.api";
 import Sidebar from "../../component/sidebar";
 import Navbar from "../../component/navbar";
 
+
+
 export default function CreateDriver() {
 	const router = useRouter();
 
@@ -34,18 +36,20 @@ export default function CreateDriver() {
 			setLoading(true);
 
 			// send email and password so driver can login
-			await createDriver({
+			const res = await createDriver({
 				name,
 				email,
 				password,
 				licenseNumber,
 				licenseType,
 			});
+			console.log(res.msg)
 
 			router.push("/driver");
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Failed to create driver:", error);
-			alert("Failed to create driver. Please try again.");
+			alert(error.response.data.msg)
+			
 		} finally {
 			setLoading(false);
 		}
@@ -60,7 +64,7 @@ export default function CreateDriver() {
 				<main className="flex flex-1 items-center justify-center p-6">
 					<div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg">
 						<h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-							Create Driver 🚗
+							Create Driver 
 						</h1>
 
 						<div className="flex flex-col gap-4">
