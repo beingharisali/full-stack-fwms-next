@@ -6,300 +6,157 @@ import Navbar from "./component/navbar";
 import LoadingBar from "../component/LoadingBar";
 import { getTrips } from "@/services/trip.api";
 import { getDrivers } from "@/services/driver.api";
-import { Trip } from "@/types/trip";
+import { getVehicles } from "@/services/vehicle.api";
 
-const ITEMS_PER_PAGE = 5;
-
-type ViewType = "none" | "trips" | "drivers";
+const ITEMS_PER_PAGE = 8;
+type ViewType = "none" | "trips" | "drivers" | "vehicles";
 
 export default function ManagerPage() {
   const router = useRouter();
-
-  const [user, setUser] = useState<any>(null);
   const [view, setView] = useState<ViewType>("trips");
-
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
-
+  const [vehicles, setVehicles] = useState<any[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
-  const [loadingTrips, setLoadingTrips] = useState(false);
-
-  const [tripSort, setTripSort] = useState<"none" | "time" | "name">("none");
-  const [driverSort, setDriverSort] = useState<"none" | "name">("none");
-  const [driverLicenseFilter, setDriverLicenseFilter] = useState("all");
-
-  const [tripPage, setTripPage] = useState(1);
-  const [driverPage, setDriverPage] = useState(1);
-
+  const [searchTerm, setSearchTerm] = useState("");
   
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/");
-      return;
-    }
-
-    try {
-      setUser(JSON.parse(atob(token.split(".")[1])));
-    } catch {
-      localStorage.removeItem("token");
-      router.push("/");
-      return;
-    }
-
     const init = async () => {
       setPageLoading(true);
-      await Promise.all([fetchTrips(), fetchDrivers()]);
+      await Promise.all([fetchTrips(), fetchDrivers(), fetchVehicles()]);
       setPageLoading(false);
     };
-
     init();
   }, []);
 
-  
-  const fetchTrips = async () => {
-    try {
-      setLoadingTrips(true);
-      const res = await getTrips();
-      setTrips(Array.isArray(res) ? res : []);
-    } finally {
-      setLoadingTrips(false);
+  const fetchTrips = async () => { try { const res = await getTrips(); setTrips(Array.isArray(res) ? res : []); } catch { setTrips([]); } };
+  const fetchDrivers = async () => { try { const res: any = await getDrivers(); setDrivers(Array.isArray(res) ? res : (res?.drivers || [])); } catch { setDrivers([]); } };
+  const fetchVehicles = async () => { try { const res = await getVehicles(); setVehicles(Array.isArray(res) ? res : []); } catch { setVehicles([]); } };
+
+  const filteredData = useMemo(() => {
+    const data = view === "trips" ? trips : view === "drivers" ? drivers : vehicles;
+    return data.filter(item => 
+      Object.values(item).some(val => 
+        String(val).toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [view, trips, drivers, vehicles, searchTerm]);
+
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
   };
 
-  const fetchDrivers = async () => {
-    try {
-      const res: any = await getDrivers();
-      const list = Array.isArray(res)
-        ? res
-        : Array.isArray(res?.drivers)
-        ? res.drivers
-        : [];
-      setDrivers(list);
-    } catch {
-      setDrivers([]);
-    }
-  };
-
- 
-  const handleView = (type: ViewType) => {
-    setView(type);
-    setTripPage(1);
-    setDriverPage(1);
-  };
-
- 
-  const sortedTrips = useMemo(() => {
-    if (tripSort === "time") {
-      return [...trips].sort((a, b) =>
-        (a.departureTime || "").localeCompare(b.departureTime || "")
-      );
-    }
-    if (tripSort === "name") {
-      return [...trips].sort((a, b) =>
-        a.destination.localeCompare(b.destination)
-      );
-    }
-    return trips;
-  }, [trips, tripSort]);
-
-  const paginatedTrips = useMemo(() => {
-    const start = (tripPage - 1) * ITEMS_PER_PAGE;
-    return sortedTrips.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedTrips, tripPage]);
-
-  const totalTripPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE);
-
-  
-  const filteredDrivers = useMemo(() => {
-    let list = [...drivers];
-
-    if (driverLicenseFilter !== "all") {
-      list = list.filter(d => d.licenseType === driverLicenseFilter);
-    }
-
-    if (driverSort === "name") {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    return list;
-  }, [drivers, driverLicenseFilter, driverSort]);
-
-  const paginatedDrivers = useMemo(() => {
-    const start = (driverPage - 1) * ITEMS_PER_PAGE;
-    return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredDrivers, driverPage]);
-
-  const totalDriverPages = Math.ceil(
-    filteredDrivers.length / ITEMS_PER_PAGE
-  );
-
-
-  if (pageLoading) {
-    return <LoadingBar title="Loading Manager Dashboard" duration={2} />;
-  }
+  if (pageLoading) return <LoadingBar title="Fleet Dashboard Loading..." duration={2} />;
 
   return (
-    <div className="min-h-screen bg-gray-100 text-black">
-      <Navbar setView={handleView} currentView={view} />
-
-      <main className="p-8 space-y-10">
-       
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-bold">Total Trips</h3>
-            <p className="text-3xl">{trips.length}</p>
+    <div className="min-h-screen bg-white text-black font-sans">
+      <Navbar setView={(v) => { setView(v as any); setCurrentPage(1); }} currentView={view} />
+      
+      <main className="max-w-7xl mx-auto p-6">
+        
+        {/* Stats Section - Clean Thin Black Borders */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="p-4 border border-black border-l-4 bg-gray-50 shadow-sm">
+            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Total Trips</p>
+            <p className="text-xl font-semibold">{trips.length}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-bold">Total Drivers</h3>
-            <p className="text-3xl">{drivers.length}</p>
+          <div className="p-4 border border-black border-l-4 bg-gray-50 shadow-sm">
+            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Total Drivers</p>
+            <p className="text-xl font-semibold">{drivers.length}</p>
+          </div>
+          <div className="p-4 border border-black border-l-4 bg-gray-50 shadow-sm">
+            <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">Total Vehicles</p>
+            <p className="text-xl font-semibold">{vehicles.length}</p>
           </div>
         </div>
 
-       
-        {view === "trips" && (
-          <div className="bg-white rounded-xl shadow">
-            <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
-              <h2 className="text-lg font-semibold">Trips</h2>
-              <select
-                value={tripSort}
-                onChange={e => setTripSort(e.target.value as any)}
-                className="bg-white text-black px-3 py-1 rounded"
-              >
-                <option value="none">Normal</option>
-                <option value="time">Early Departure</option>
-                <option value="name">Destination (A-Z)</option>
-              </select>
-            </div>
+        {/* Search Bar - Sharp Thin Border */}
+        <div className="flex flex-col md:flex-row gap-3 mb-6">
+          <input 
+            type="text" 
+            placeholder="Search by any detail..." 
+            className="flex-grow p-2 border border-black rounded focus:outline-none"
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+          />
+          <button className="bg-black text-white px-6 py-2 rounded text-xs font-bold hover:bg-gray-800 transition-all">
+            SORT A &rarr; Z
+          </button>
+        </div>
 
-            <table className="w-full">
-              <thead className="bg-slate-600 text-white">
-                <tr>
-                  <th className="px-4 py-3 text-left">Departure</th>
-                  <th className="px-4 py-3 text-left">Date</th>
-                  <th className="px-4 py-3 text-left">Destination</th>
-                  <th className="px-4 py-3 text-left">Time</th>
+        {/* Main Table - Thin Black Grid (Image Inspired) */}
+        <div className="border border-black rounded overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#e5e7eb] border-b border-black text-[12px]">
+                <th className="px-4 py-3 font-bold border-r border-black uppercase tracking-tight">Driver</th>
+                <th className="px-4 py-3 font-bold border-r border-black uppercase tracking-tight">Vehicle</th>
+                <th className="px-4 py-3 font-bold border-r border-black uppercase tracking-tight">Trip (Dest.)</th>
+                <th className="px-4 py-3 font-bold border-r border-black uppercase tracking-tight">Departure</th>
+                <th className="px-4 py-3 font-bold border-r border-black uppercase tracking-tight">Arrival</th>
+                <th className="px-4 py-3 font-bold uppercase tracking-tight">Date</th>
+              </tr>
+            </thead>
+            <tbody className="text-[13px] divide-y divide-black/10">
+              {paginatedData.map((item: any) => (
+                <tr key={item._id} className="hover:bg-gray-50 border-b border-black/10">
+                  <td className="px-4 py-3 border-r border-black">{item.driverName || item.name || "---"}</td>
+                  <td className="px-4 py-3 border-r border-black">{item.vehicleNumber || item.number || "---"}</td>
+                  <td className="px-4 py-3 border-r border-black font-medium">{item.destination || "---"}</td>
+                  <td className="px-4 py-3 border-r border-black text-gray-600">{item.departureTime || "--:--"}</td>
+                  <td className="px-4 py-3 border-r border-black text-gray-600">{item.arrivalTime || "--:--"}</td>
+                  <td className="px-4 py-3">{item.date ? new Date(item.date).toLocaleDateString() : "---"}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {paginatedTrips.map(trip => (
-                  <tr key={trip._id} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-3">{trip.departure}</td>
-                    <td className="px-4 py-3">
-                      {new Date(trip.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">{trip.destination}</td>
-                    <td className="px-4 py-3">
-                      {trip.departureTime || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
+        {/* Pagination Section - Simple Black Style */}
+        <div className="mt-8 flex items-center justify-between">
+          <p className="text-[12px] font-medium text-gray-500">
+            Total {filteredData.length} entries found
+          </p>
+          <div className="flex items-center gap-1">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="px-3 py-1.5 border border-black rounded text-[12px] hover:bg-gray-100 disabled:opacity-30"
+            >
+              Prev
+            </button>
             
-            <div className="flex justify-center gap-4 py-4">
-              <button
-                disabled={tripPage === 1}
-                onClick={() => setTripPage(p => p - 1)}
-                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span>
-                Page {tripPage} of {totalTripPages}
-              </span>
-              <button
-                disabled={tripPage === totalTripPages}
-                onClick={() => setTripPage(p => p + 1)}
-                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        
-        {view === "drivers" && (
-          <div className="bg-white rounded-xl shadow">
-            <div className="bg-slate-900 text-white px-6 py-4 rounded-t-xl flex justify-between">
-              <h2 className="text-lg font-semibold">Drivers</h2>
-
-              <div className="flex gap-3">
-                <select
-                  value={driverLicenseFilter}
-                  onChange={e => {
-                    setDriverLicenseFilter(e.target.value);
-                    setDriverPage(1);
-                  }}
-                  className="bg-white text-black px-3 py-1 rounded"
+            <div className="flex gap-1 mx-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`w-8 h-8 rounded text-[12px] font-bold border transition-all ${
+                    currentPage === pageNum 
+                    ? "bg-black text-white border-black" 
+                    : "bg-white text-black border-black hover:bg-gray-100"
+                  }`}
                 >
-                  <option value="all">All License</option>
-                  <option value="LTV">LTV</option>
-                  <option value="HTV">HTV</option>
-                  <option value="MCV">MCV</option>
-                </select>
-
-                <select
-                  value={driverSort}
-                  onChange={e => {
-                    setDriverSort(e.target.value as any);
-                    setDriverPage(1);
-                  }}
-                  className="bg-white text-black px-3 py-1 rounded"
-                >
-                  <option value="none">Normal</option>
-                  <option value="name">Name (A-Z)</option>
-                </select>
-              </div>
+                  {pageNum}
+                </button>
+              ))}
             </div>
 
-            <table className="w-full">
-              <thead className="bg-slate-600 text-white">
-                <tr>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">License No</th>
-                  <th className="px-4 py-3 text-left">License Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedDrivers.map(driver => (
-                  <tr key={driver._id} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-3">{driver.name}</td>
-                    <td className="px-4 py-3">
-                      {driver.licenseNumber}
-                    </td>
-                    <td className="px-4 py-3">
-                      {driver.licenseType}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-           
-            <div className="flex justify-center gap-4 py-4">
-              <button
-                disabled={driverPage === 1}
-                onClick={() => setDriverPage(p => p - 1)}
-                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span>
-                Page {driverPage} of {totalDriverPages}
-              </span>
-              <button
-                disabled={driverPage === totalDriverPages}
-                onClick={() => setDriverPage(p => p + 1)}
-                className="px-4 py-1 bg-slate-900 text-white rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+            <button 
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="px-3 py-1.5 border border-black rounded text-[12px] hover:bg-gray-100 disabled:opacity-30"
+            >
+              Next
+            </button>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );
