@@ -79,7 +79,7 @@ export default function ManagerPage() {
 						item.name ||
 						`${item.firstName || ""} ${item.lastName || ""}`.trim() ||
 						"---",
-					item.assignedVehicle.number,
+					item?.assignedVehicle?.number || "unassaigned",
 
 					item.licenseNumber || item.licenseNo || "---",
 
